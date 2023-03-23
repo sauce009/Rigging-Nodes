@@ -1,0 +1,145 @@
+global proc string arg_doSpine()
+{
+	string $jnt[] = {"spine_JA_JNT","spine_JB_JNT","spine_JC_JNT","spine_JD_JNT","spine_JE_JNT","spine_JF_JNT","spine_JG_JNT"};
+	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	string $trans[];
+	string $sam[];
+	string $pCv[];
+	string $offGrp;
+	$mainOffGrp = `group -em -n("hermiteSpine_Offset_GRP")`;
+	for($i=0; $i<size($jnt); $i++)
+	{
+		$sam[$i] = `createNode joint -n ("hermiteSpine" + $lib[$i] + "_JNT")`;
+		$pCv[$i] = `createNode pointOnCurveInfo -n ("spine" + $lib[$i] + "_POCV")`;
+		$trans = `spaceLocator -n ("hermiteSpine" + $lib[$i] + "_LOC")`;
+		$connA = `parentConstraint $jnt[$i] $trans`;
+		$offGrp = `group -em -n("hermiteSpine" + $lib[$i] + "_Offset_GRP")`;
+		$connB = `parentConstraint $jnt[$i] $offGrp`;
+		$modGrp = `group -em -n("hermiteSpine" + $lib[$i] + "_Modify_GRP")`;
+		$connC = `parentConstraint $jnt[$i] $modGrp`;
+		$conGrp = `group -em -n("hermiteSpine" + $lib[$i] + "_Con_GRP")`;
+		$connD = `parentConstraint $jnt[$i] $conGrp`;
+		parent $conGrp $modGrp;
+		parent $modGrp $offGrp;
+		delete $connA $connB $connC $connD;
+		parentConstraint -mo $conGrp $trans;
+		parent $offGrp $mainOffGrp;
+	}
+
+	string $loc[] = {"hermiteSpineA_LOC","hermiteSpineB_LOC","hermiteSpineC_LOC","hermiteSpineD_LOC","hermiteSpineE_LOC","hermiteSpineF_LOC","hermiteSpineG_LOC"};
+	float $a[] = `getAttr ($loc[0] + ".translate")`;
+	float $b[] = `getAttr ($loc[1] + ".translate")`;
+	float $c[] = `getAttr ($loc[2] + ".translate")`;
+	float $d[] = `getAttr ($loc[3] + ".translate")`;
+	float $e[] = `getAttr ($loc[4] + ".translate")`;
+	float $f[] = `getAttr ($loc[5] + ".translate")`;
+	float $g[] = `getAttr ($loc[6] + ".translate")`;
+
+	float $x[] = {((($b[0]-$a[0])/3)+$a[0]), ((($b[1]-$a[1])/3)+$a[1]), ((($b[2]-$a[2])/3)+$a[2])};
+	float $y[] = {(((($g[0]-$f[0])/3)*2)+$f[0]), (((($g[1]-$f[1])/3)*2)+$f[1]), (((($g[2]-$f[2])/3)*2)+$f[2])};
+	
+	string $cv = `curve -d 3 -p $a[0] $a[1] $a[2] -p $x[0] $x[1] $x[2] -p $b[0] $b[1] $b[2] -p $c[0] $c[1] $c[2] -p $d[0] $d[1] $d[2] -p $e[0] $e[1] $e[2] -p $f[0] $f[1] $f[2] -p $y[0] $y[1] $y[2] -p $g[0] $g[1] $g[2] -k 0 -k 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 6 -k 6 -n ("hermiteSpine_CV" )`;
+	connectAttr -f ($loc[0] + ".translate") ($cv + ".controlPoints[0]");
+	connectAttr -f ($loc[1] + ".translate") ($cv + ".controlPoints[2]");
+	connectAttr -f ($loc[2] + ".translate") ($cv + ".controlPoints[3]");
+	connectAttr -f ($loc[3] + ".translate") ($cv + ".controlPoints[4]");
+	connectAttr -f ($loc[4] + ".translate") ($cv + ".controlPoints[5]");
+	connectAttr -f ($loc[5] + ".translate") ($cv + ".controlPoints[6]");
+	connectAttr -f ($loc[6] + ".translate") ($cv + ".controlPoints[8]");
+
+	$pmA = `createNode plusMinusAverage -n ("spineX_PMA")`;
+	$pmB = `createNode plusMinusAverage -n ("spineY_PMA")`;
+	setAttr ($pmA + ".operation") 3;
+	setAttr ($pmB + ".operation") 3;
+	
+	connectAttr -f ($loc[0] + ".translate") ($pmA + ".input3D[0]");
+	connectAttr -f ($loc[1] + ".translate") ($pmA + ".input3D[1]");
+	connectAttr -f ($pmA + ".output3D") ($cv + ".controlPoints[1]");
+	
+	connectAttr -f ($loc[5] + ".translate") ($pmB + ".input3D[0]");
+	connectAttr -f ($loc[6] + ".translate") ($pmB + ".input3D[1]");
+	connectAttr -f ($pmB + ".output3D") ($cv + ".controlPoints[7]");
+	
+	createNode -n tempNearestPointOnCurve nearestPointOnCurve;
+	connectAttr -f ($cv + ".worldSpace[0]") tempNearestPointOnCurve.inputCurve;
+	for($i=0; $i<size($jnt); $i++)
+	{
+		connectAttr -f ($cv + ".worldSpace[0]") ($pCv[$i] + ".inputCurve");
+		connectAttr -f ($pCv[$i] + ".position") ($sam[$i] + ".translate");
+		$pos = `xform -q -ws -t ($jnt[$i])`;
+		setAttr -type float3 tempNearestPointOnCurve.inPosition $pos[0] $pos[1] $pos[2];
+		setAttr ($pCv[$i] + ".parameter") `getAttr tempNearestPointOnCurve.result.parameter`;
+	}
+	delete tempNearestPointOnCurve;
+	
+	string $aimLoc[] = `spaceLocator -n ("hermiteSpine_UpVec_LOC")`;
+	string $locCon[] = `pointConstraint $sam[0] $aimLoc[0]`;
+	delete $locCon;
+	
+	string $locGrp = `group -em -n("hermiteSpineLoc_GRP")`;
+	parent $loc $locGrp;
+	string $samGrp = `group -em -n("hermiteSpineJnt_GRP") ($sam)`;
+	parent $sam $samGrp;
+	string $partsGrp = `group -em -n("spineParts_GRP") ($locGrp) ($samGrp) ($cv)`;
+	parent $locGrp $samGrp $mainOffGrp $cv $partsGrp;
+	parent $aimLoc $samGrp;
+	
+	string $conA[] = `parentConstraint -mo ("hermiteSpine" + $lib[0] + "_Con_GRP") ("hermiteSpine" + $lib[6] + "_Con_GRP") ("hermiteSpine" + $lib[3] + "_Offset_GRP")`;
+	
+	string $conB[] = `parentConstraint -mo ("hermiteSpine" + $lib[0] + "_Con_GRP") ("hermiteSpine" + $lib[3] + "_Con_GRP") ("hermiteSpine" + $lib[1] + "_Offset_GRP")`;
+	string $conC[] = `parentConstraint -mo ("hermiteSpine" + $lib[0] + "_Con_GRP") ("hermiteSpine" + $lib[3] + "_Con_GRP") ("hermiteSpine" + $lib[2] + "_Offset_GRP")`;
+	
+	string $conD[] = `parentConstraint -mo ("hermiteSpine" + $lib[3] + "_Con_GRP") ("hermiteSpine" + $lib[6] + "_Con_GRP") ("hermiteSpine" + $lib[4] + "_Offset_GRP")`;
+	string $conE[] = `parentConstraint -mo ("hermiteSpine" + $lib[3] + "_Con_GRP") ("hermiteSpine" + $lib[6] + "_Con_GRP") ("hermiteSpine" + $lib[5] + "_Offset_GRP")`;
+	
+	setAttr ($conA[0] + ".hermiteSpineG_Con_GRPW1") (0.5);
+	setAttr ($conA[0] + ".hermiteSpineA_Con_GRPW0") (0.5);
+	
+	setAttr ($conB[0] + ".hermiteSpineA_Con_GRPW0") (0.55);
+	setAttr ($conB[0] + ".hermiteSpineD_Con_GRPW1") (0.45);
+	
+	setAttr ($conC[0] + ".hermiteSpineA_Con_GRPW0") (0.2);
+	setAttr ($conC[0] + ".hermiteSpineD_Con_GRPW1") (0.8);
+	
+	setAttr ($conD[0] + ".hermiteSpineD_Con_GRPW0") (0.8);
+	setAttr ($conD[0] + ".hermiteSpineG_Con_GRPW1") (0.2);
+	
+	setAttr ($conE[0] + ".hermiteSpineG_Con_GRPW1") (0.55);
+	setAttr ($conE[0] + ".hermiteSpineD_Con_GRPW0") (0.45);
+	
+	aimConstraint -offset 0 0 0 -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector 0 0 1 -worldUpObject ($aimLoc) ($sam[1]) ($sam[0]);
+	aimConstraint -offset 0 0 0 -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector 0 0 1 -worldUpObject ($aimLoc) ($sam[2]) ($sam[1]);
+	aimConstraint -offset 0 0 0 -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector 0 0 1 -worldUpObject ($aimLoc) ($sam[3]) ($sam[2]);
+	aimConstraint -offset 0 0 0 -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector 0 0 1 -worldUpObject ($aimLoc) ($sam[4]) ($sam[3]);
+	aimConstraint -offset 0 0 0 -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector 0 0 1 -worldUpObject ($aimLoc) ($sam[5]) ($sam[4]);
+	aimConstraint -offset 0 0 0 -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector 0 0 1 -worldUpObject ($aimLoc) ($sam[6]) ($sam[5]);
+	
+	parentConstraint -mo ($sam[0]) ($jnt[0]);
+	parentConstraint -mo ($sam[1]) ($jnt[1]);
+	parentConstraint -mo ($sam[2]) ($jnt[2]);
+	parentConstraint -mo ($sam[3]) ($jnt[3]);
+	parentConstraint -mo ($sam[4]) ($jnt[4]);
+	parentConstraint -mo ($sam[5]) ($jnt[5]);
+	parentConstraint -mo ($sam[6]) ($jnt[6]);
+	
+	select -r spine_JA_JNT ;
+	arg_circle;
+	parentConstraint -mo ("spine_JA_Con_GRP") ("hermiteSpineA_Offset_GRP");
+	parentConstraint -mo ("spine_JA_Con_GRP") ("pelvis_JA_JNT");
+	
+	select -r spine_JG_JNT ;
+	arg_circle;
+	parentConstraint -mo ("spine_JG_Con_GRP") ("hermiteSpineG_Modify_GRP");
+	
+	select -r spine_JD_JNT ;
+	arg_circle;
+	parentConstraint -mo ("spine_JD_Con_GRP") ("hermiteSpineD_Offset_GRP");
+	
+	$ctrlGrp = `group -em -n("spineControls_GRP")`;
+	parent ("spine_JA_Offset_GRP") ("spine_JD_Offset_GRP") ("spine_JG_Offset_GRP") $ctrlGrp;
+	
+	$mainGrp = `group -em -n("spine_GRP")`;
+	parent $ctrlGrp $partsGrp $mainGrp;
+	
+	return "arg_doSpine";
+}
