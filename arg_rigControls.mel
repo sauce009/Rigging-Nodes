@@ -1,0 +1,485 @@
+global proc string arg_offsetGrp()
+{
+    string $sel[] = `ls -sl`;
+    string $grp;
+    string $con[];
+    for ($i=0; $i<size($sel); $i++)
+    {
+        $grp = `group -em -n ($sel[$i]+"_offset_GRP")`;
+        $con = `parentConstraint $sel[$i] $grp`;
+        delete $con;
+        parent $sel[$i] $grp;
+    }
+
+    return "arg_offsetGrp";
+
+}
+
+global proc string arg_circle()
+{
+    string $sel[] = `ls -sl`;
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++)
+    {
+    	if(($sel[$i]) == ($sel[$i]))
+    	{
+			string $basename = basename( $sel[$i], "_JNT" );
+	        $ctrl = `circle -c 0 0 0 -nr 0 1 0 -r 0.25 -d 1 -s 8 -ch 0 -n ( $basename + "_CTRL" )`;
+	        $con = `parentConstraint $sel[$i] $ctrl`;
+	        delete $con;
+
+	        $oGrp = `group -em -n ( $basename + "_Offset_GRP" )`;
+	        $con = `parentConstraint $sel[$i] $oGrp`;
+        	delete $con;
+			$mGrp = `group -em -n ( $basename + "_Modify_GRP" )`;
+			$con = `parentConstraint $sel[$i] $mGrp`;
+			delete $con;
+			parent $mGrp $oGrp;
+			parent $ctrl $mGrp;
+        	$cGrp = `group -em -n ( $basename + "_Con_GRP" )`;
+        	$con = `parentConstraint $sel[$i] $cGrp`;
+        	delete $con;
+        	parent $cGrp $ctrl;
+			select -cl;
+    	}
+    	else
+    	{
+    		warning("Bhag Sala");
+    	}
+    }
+
+    return "arg_circle";
+
+}
+
+global proc string arg_cube()
+{
+    string $sel[] = `ls -sl`;
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++)
+    {
+    	if(($sel[$i]) == ($sel[$i]))
+    	{
+	        $ctrl = `curve -d 1 -p -0.5 -0.5 0.5 -p -0.5 0 0.5 -p -0.5 0.5 0.5 -p 0 0.5 0.5 -p 0.5 0.5 0.5 -p 0.5 0 0.5 -p 0.5 -0.5 0.5 -p 0 -0.5 0.5 -p -0.5 -0.5 0.5 -p -0.5 -0.5 0 -p -0.5 -0.5 -0.5 -p -0.5 0 -0.5 -p -0.5 0.5 -0.5 -p -0.5 0.5 0 -p -0.5 0.5 0.5 -p 0 0.5 0.5 -p 0.5 0.5 0.5 -p 0.5 0.5 0 -p 0.5 0.5 -0.5 -p 0 0.5 -0.5 -p -0.5 0.5 -0.5 -p -0.5 0 -0.5 -p -0.5 -0.5 -0.5 -p 0 -0.5 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 0 -0.5 -p 0.5 0.5 -0.5 -p 0.5 0 -0.5 -p 0.5 -0.5 -0.5 -p 0.5 -0.5 0 -p 0.5 -0.5 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19 -k 20 -k 21 -k 22 -k 23 -k 24 -k 25 -k 26 -k 27 -k 28 -k 29 -k 30 -n ($sel[$i] + "_CTRL")`;
+	        $con = `parentConstraint $sel[$i] $ctrl`;
+	        delete $con;
+
+	        $oGrp = `group -em -n ($sel[$i]+"Offset_GRP")`;
+	        $con = `parentConstraint $sel[$i] $oGrp`;
+        	delete $con;
+			$mGrp = `group -em -n ($sel[$i]+"Modify_GRP")`;
+			$con = `parentConstraint $sel[$i] $mGrp`;
+			delete $con;
+			parent $mGrp $oGrp;
+			parent $ctrl $mGrp;
+        	$cGrp = `group -em -n ($sel[$i]+"Con_GRP")`;
+        	$con = `parentConstraint $sel[$i] $cGrp`;
+        	delete $con;
+        	parent $cGrp $ctrl;
+			select -cl;
+    	}
+    	else
+    	{
+    		warning("Bhag Sala");
+    	}
+    }
+
+    return "arg_cube";
+
+}
+
+global proc string arg_cylinder()
+{
+    string $sel[] = `ls -sl`;
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++)
+    {
+    	if(($sel[$i]) == ($sel[$i]))
+    	{
+	        $ctrl = `curve -d 1 -p 0.707107 1 0.707107 -p 0.707107 0 0.707107 -p 0.707107 -1 0.707107 -p 1 -1 0 -p 1 0 0 -p 1 1 0 -p 0.707107 1 0.707107 -p 0 1 1 -p 0 0 1 -p 0 -1 1 -p 0.707107 -1 0.707107 -p 1 -1 0 -p 0.707107 -1 -0.707107 -p 0.707107 0 -0.707107 -p 0.707107 1 -0.707107 -p 1 1 0 -p 0.707107 1 -0.707107 -p 0 1 -1 -p 0 0 -1 -p 0 -1 -1 -p 0.707107 -1 -0.707107 -p 0 -1 -1 -p -0.707107 -1 -0.707107 -p -0.707107 0 -0.707107 -p -0.707107 1 -0.707107 -p 0 1 -1 -p -0.707107 1 -0.707107 -p -1 1 0 -p -1 0 0 -p -1 -1 0 -p -0.707107 -1 -0.707107 -p -1 -1 0 -p -0.707107 -1 0.707107 -p -0.707107 0 0.707107 -p -0.707107 1 0.707107 -p -1 1 0 -p -0.707107 1 0.707107 -p 0 1 1 -p 0 0 1 -p 0 -1 1 -p -0.707107 -1 0.707107 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19 -k 20 -k 21 -k 22 -k 23 -k 24 -k 25 -k 26 -k 27 -k 28 -k 29 -k 30 -k 31 -k 32 -k 33 -k 34 -k 35 -k 36 -k 37 -k 38 -k 39 -k 40 -n ($sel[$i] + "_CTRL")`;
+	        $con = `parentConstraint $sel[$i] $ctrl`;
+	        delete $con;
+
+	        $oGrp = `group -em -n ($sel[$i]+"Offset_GRP")`;
+	        $con = `parentConstraint $sel[$i] $oGrp`;
+        	delete $con;
+			$mGrp = `group -em -n ($sel[$i]+"Modify_GRP")`;
+			$con = `parentConstraint $sel[$i] $mGrp`;
+			delete $con;
+			parent $mGrp $oGrp;
+			parent $ctrl $mGrp;
+        	$cGrp = `group -em -n ($sel[$i]+"Con_GRP")`;
+        	$con = `parentConstraint $sel[$i] $cGrp`;
+        	delete $con;
+        	parent $cGrp $ctrl;
+			select -cl;
+    	}
+    	else
+    	{
+    		warning("Bhag Sala");
+    	}
+    }
+
+    return "arg_cylinder";
+
+}
+
+global proc string arg_cone()
+{
+    string $sel[] = `ls -sl`;
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++)
+    {
+    	if(($sel[$i]) == ($sel[$i]))
+    	{
+	        $ctrl = `curve -d 1 -p 0.707107 -1 -0.707107 -p 0 -1 -1 -p 0 1 0 -p 0.707107 -1 -0.707107 -p 1 -1 0 -p 0 1 0 -p 0.707107 -1 0.707107 -p 1 -1 0 -p 0.707107 -1 0.707107 -p 0 -1 1 -p 0 1 0 -p -0.707107 -1 0.707107 -p 0 -1 1 -p -0.707107 -1 0.707107 -p -1 -1 0 -p 0 1 0 -p -0.707107 -1 -0.707107 -p -1 -1 0 -p -0.707107 -1 -0.707107 -p 0 -1 -1 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19 -n ($sel[$i] + "_CTRL")`;
+	        $con = `parentConstraint $sel[$i] $ctrl`;
+	        delete $con;
+
+	        $oGrp = `group -em -n ($sel[$i]+"Offset_GRP")`;
+	        $con = `parentConstraint $sel[$i] $oGrp`;
+        	delete $con;
+			$mGrp = `group -em -n ($sel[$i]+"Modify_GRP")`;
+			$con = `parentConstraint $sel[$i] $mGrp`;
+			delete $con;
+			parent $mGrp $oGrp;
+			parent $ctrl $mGrp;
+        	$cGrp = `group -em -n ($sel[$i]+"Con_GRP")`;
+        	$con = `parentConstraint $sel[$i] $cGrp`;
+        	delete $con;
+        	parent $cGrp $ctrl;
+			select -cl;
+    	}
+    	else
+    	{
+    		warning("Bhag Sala");
+    	}
+    }
+
+    return "arg_cone";
+
+}
+
+global proc string arg_sphere()
+{
+    string $sel[] = `ls -sl`;
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++)
+    {
+    	if(($sel[$i]) == ($sel[$i]))
+    	{
+	        $ctrl = `curve -d 1 -p 0 -1 0 -p -0.270598 -0.92388 -0.270598 -p -0.5 -0.707107 -0.5 -p -0.653281 -0.382683 -0.653281 -p -0.707107 0 -0.707107 -p -0.653281 0.382683 -0.653281 -p -0.5 0.707107 -0.5 -p -0.270598 0.92388 -0.270598 -p 0 1 0 -p -0.382683 0.92388 0 -p -0.707107 0.707107 0 -p -0.923879 0.382683 0 -p -1 0 0 -p -0.923879 -0.382683 0 -p -0.707107 -0.707107 0 -p -0.382683 -0.92388 0 -p 0 -1 0 -p -0.270598 -0.92388 0.270598 -p -0.5 -0.707107 0.5 -p -0.653281 -0.382683 0.653281 -p -0.707107 0 0.707107 -p -0.653281 0.382683 0.653281 -p -0.5 0.707107 0.5 -p -0.270598 0.92388 0.270598 -p 0 1 0 -p 0 0.92388 0.382683 -p 0 0.707107 0.707107 -p 0 0.382683 0.923879 -p 0 0 1 -p 0 -0.382683 0.923879 -p 0 -0.707107 0.707107 -p 0 -0.92388 0.382683 -p 0 -1 0 -p 0.270598 -0.92388 0.270598 -p 0.5 -0.707107 0.5 -p 0.653281 -0.382683 0.653281 -p 0.707107 0 0.707107 -p 0.653281 0.382683 0.653281 -p 0.5 0.707107 0.5 -p 0.270598 0.92388 0.270598 -p 0 1 0 -p 0.382683 0.92388 0 -p 0.707107 0.707107 0 -p 0.92388 0.382683 0 -p 1 0 0 -p 0.92388 -0.382683 0 -p 0.707107 -0.707107 0 -p 0.382683 -0.92388 0 -p 0 -1 0 -p 0.270598 -0.92388 -0.270598 -p 0.5 -0.707107 -0.5 -p 0.653281 -0.382683 -0.653281 -p 0.707107 0 -0.707107 -p 0.653281 0.382683 -0.653281 -p 0.5 0.707107 -0.5 -p 0.270598 0.92388 -0.270598 -p 0 1 0 -p 0 0.92388 -0.382683 -p 0 0.707107 -0.707107 -p 0 0.382683 -0.923879 -p 0 0 -1 -p 0 -0.382683 -0.923879 -p 0 -0.707107 -0.707107 -p 0 -0.92388 -0.382683 -p 0 -1 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19 -k 20 -k 21 -k 22 -k 23 -k 24 -k 25 -k 26 -k 27 -k 28 -k 29 -k 30 -k 31 -k 32 -k 33 -k 34 -k 35 -k 36 -k 37 -k 38 -k 39 -k 40 -k 41 -k 42 -k 43 -k 44 -k 45 -k 46 -k 47 -k 48 -k 49 -k 50 -k 51 -k 52 -k 53 -k 54 -k 55 -k 56 -k 57 -k 58 -k 59 -k 60 -k 61 -k 62 -k 63 -k 64 -n ($sel[$i] + "_CTRL")`;
+	        $con = `parentConstraint $sel[$i] $ctrl`;
+	        delete $con;
+
+	        $oGrp = `group -em -n ($sel[$i]+"Offset_GRP")`;
+	        $con = `parentConstraint $sel[$i] $oGrp`;
+        	delete $con;
+			$mGrp = `group -em -n ($sel[$i]+"Modify_GRP")`;
+			$con = `parentConstraint $sel[$i] $mGrp`;
+			delete $con;
+			parent $mGrp $oGrp;
+			parent $ctrl $mGrp;
+        	$cGrp = `group -em -n ($sel[$i]+"Con_GRP")`;
+        	$con = `parentConstraint $sel[$i] $cGrp`;
+        	delete $con;
+        	parent $cGrp $ctrl;
+			select -cl;
+    	}
+    	else
+    	{
+    		warning("Bhag Sala");
+    	}
+    }
+
+    return "arg_sphere";
+
+}
+
+global proc string arg_plus()
+{
+    string $sel[] = `ls -sl`;
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++)
+    {
+    	if(($sel[$i]) == ($sel[$i]))
+    	{
+	        $ctrl = `curve -d 1 -p -0.5 0 -1.5 -p 0.5 0 -1.5 -p 0.5 0 -0.5 -p 1.5 0 -0.5 -p 1.5 0 0.5 -p 0.5 0 0.5 -p 0.5 0 1.5 -p -0.5 0 1.5 -p -0.5 0 0.5 -p -1.5 0 0.5 -p -1.5 0 -0.5 -p -0.5 0 -0.5 -p -0.5 0 -1.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -n ($sel[$i] + "_CTRL")`;
+	        $con = `parentConstraint $sel[$i] $ctrl`;
+	        delete $con;
+
+	        $oGrp = `group -em -n ($sel[$i]+"Offset_GRP")`;
+	        $con = `parentConstraint $sel[$i] $oGrp`;
+        	delete $con;
+			$mGrp = `group -em -n ($sel[$i]+"Modify_GRP")`;
+			$con = `parentConstraint $sel[$i] $mGrp`;
+			delete $con;
+			parent $mGrp $oGrp;
+			parent $ctrl $mGrp;
+        	$cGrp = `group -em -n ($sel[$i]+"Con_GRP")`;
+        	$con = `parentConstraint $sel[$i] $cGrp`;
+        	delete $con;
+        	parent $cGrp $ctrl;
+			select -cl;
+    	}
+    	else
+    	{
+    		warning("Bhag Sala");
+    	}
+    }
+
+    return "arg_plus";
+
+}
+
+global proc string arg_arrow()
+{
+    string $sel[] = `ls -sl`;
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++)
+    {
+    	if(($sel[$i]) == ($sel[$i]))
+    	{
+	        $ctrl = `curve -d 1 -p 0 0 -2 -p 1 0 -0.500011 -p 0.500003 0 -0.499989 -p 0.499997 0 1.5 -p -0.499997 0 1.5 -p -0.500003 0 -0.499989 -p -1 0 -0.500011 -p 0 0 -2 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -n ($sel[$i] + "_CTRL")`;
+	        $con = `parentConstraint $sel[$i] $ctrl`;
+	        delete $con;
+
+	        $oGrp = `group -em -n ($sel[$i]+"Offset_GRP")`;
+	        $con = `parentConstraint $sel[$i] $oGrp`;
+        	delete $con;
+			$mGrp = `group -em -n ($sel[$i]+"Modify_GRP")`;
+			$con = `parentConstraint $sel[$i] $mGrp`;
+			delete $con;
+			parent $mGrp $oGrp;
+			parent $ctrl $mGrp;
+        	$cGrp = `group -em -n ($sel[$i]+"Con_GRP")`;
+        	$con = `parentConstraint $sel[$i] $cGrp`;
+        	delete $con;
+        	parent $cGrp $ctrl;
+			select -cl;
+    	}
+    	else
+    	{
+    		warning("Bhag Sala");
+    	}
+    }
+
+    return "arg_arrow";
+
+} 
+
+global proc string arg_moveAll()
+{
+    string $sel[] = `ls -sl`;
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++)
+    {
+    	if(($sel[$i]) == ($sel[$i]))
+    	{
+	        $ctrl = `curve -d 1 -p -0.378842 0 -2 -p 0.378842 0 -2 -p 0.378842 0 -0.92388 -p 0.587785 0 -0.809017 -p 0.809017 0 -0.587785 -p 0.92388 0 -0.378842 -p 2 0 -0.378842 -p 2 0 0.378842 -p 0.92388 0 0.378842 -p 0.809017 0 0.587785 -p 0.587785 0 0.809017 -p 0.378842 0 0.92388 -p 0.378842 0 2 -p -0.378842 0 2 -p -0.378842 0 0.92388 -p -0.587785 0 0.809017 -p -0.809017 0 0.587785 -p -0.92388 0 0.378842 -p -2 0 0.378842 -p -2 0 -0.378842 -p -0.92388 0 -0.378842 -p -0.809017 0 -0.587785 -p -0.587785 0 -0.809017 -p -0.378842 0 -0.92388 -p -0.378842 0 -2 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19 -k 20 -k 21 -k 22 -k 23 -k 24 -n ($sel[$i] + "_CTRL")`;
+	        $con = `parentConstraint $sel[$i] $ctrl`;
+	        delete $con;
+
+	        $oGrp = `group -em -n ($sel[$i]+"Offset_GRP")`;
+	        $con = `parentConstraint $sel[$i] $oGrp`;
+        	delete $con;
+			$mGrp = `group -em -n ($sel[$i]+"Modify_GRP")`;
+			$con = `parentConstraint $sel[$i] $mGrp`;
+			delete $con;
+			parent $mGrp $oGrp;
+			parent $ctrl $mGrp;
+        	$cGrp = `group -em -n ($sel[$i]+"Con_GRP")`;
+        	$con = `parentConstraint $sel[$i] $cGrp`;
+        	delete $con;
+        	parent $cGrp $ctrl;
+			select -cl;
+    	}
+    	else
+    	{
+    		warning("Bhag Sala");
+    	}
+    }
+
+    return "arg_moveAll";
+
+} 
+
+global proc string arg_palm()
+{
+    string $sel[] = `ls -sl`;
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++)
+    {
+    	if(($sel[$i]) == ($sel[$i]))
+    	{
+	        $ctrl = `curve -d 1 -p -0.5 0 0.5 -p 0.5 0 0.5 -p 0.5 0.25 0.45 -p 0.5 0.5 0.166667 -p 0.5 0.5 -0.166667 -p 0.5 0.25 -0.45 -p 0.5 0 -0.5 -p -0.5 0 -0.5 -p -0.5 0.25 -0.45 -p -0.5 0.5 -0.166667 -p -0.5 0.5 0.166667 -p -0.5 0.25 0.45 -p -0.5 0 0.5 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -n ($sel[$i] + "_CTRL")`;
+	        $con = `parentConstraint $sel[$i] $ctrl`;
+	        delete $con;
+
+	        $oGrp = `group -em -n ($sel[$i]+"Offset_GRP")`;
+	        $con = `parentConstraint $sel[$i] $oGrp`;
+        	delete $con;
+			$mGrp = `group -em -n ($sel[$i]+"Modify_GRP")`;
+			$con = `parentConstraint $sel[$i] $mGrp`;
+			delete $con;
+			parent $mGrp $oGrp;
+			parent $ctrl $mGrp;
+        	$cGrp = `group -em -n ($sel[$i]+"Con_GRP")`;
+        	$con = `parentConstraint $sel[$i] $cGrp`;
+        	delete $con;
+        	parent $cGrp $ctrl;
+			select -cl;
+    	}
+    	else
+    	{
+    		warning("Bhag Sala");
+    	}
+    }
+
+    return "arg_palm";
+
+}
+
+global proc string arg_fing()
+{
+    string $sel[] = `ls -sl`;
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++)
+    {
+    	if(($sel[$i]) == ($sel[$i]))
+    	{
+	        $ctrl = `curve -d 1 -p 0 0 0 -p 0 0 -1.25 -p -0.176777 0 -1.323223 -p -0.25 0 -1.5 -p -0.176777 0 -1.676777 -p 0 0 -1.75 -p 0.176777 0 -1.676777 -p 0.25 0 -1.5 -p 0.176777 0 -1.323223 -p 0 0 -1.25 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -n ($sel[$i] + "_CTRL")`;
+	        $con = `parentConstraint $sel[$i] $ctrl`;
+	        delete $con;
+
+	        $oGrp = `group -em -n ($sel[$i]+"Offset_GRP")`;
+	        $con = `parentConstraint $sel[$i] $oGrp`;
+        	delete $con;
+			$mGrp = `group -em -n ($sel[$i]+"Modify_GRP")`;
+			$con = `parentConstraint $sel[$i] $mGrp`;
+			delete $con;
+			parent $mGrp $oGrp;
+			parent $ctrl $mGrp;
+        	$cGrp = `group -em -n ($sel[$i]+"Con_GRP")`;
+        	$con = `parentConstraint $sel[$i] $cGrp`;
+        	delete $con;
+        	parent $cGrp $ctrl;
+			select -cl;
+    	}
+    	else
+    	{
+    		warning("Bhag Sala");
+    	}
+    }
+
+    return "arg_fing";
+
+}
+
+global proc string arg_miniSphere()
+{
+    string $sel[] = `ls -sl`;
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++)
+    {
+    	if(($sel[$i]) == ($sel[$i]))
+    	{
+	        $ctrl = `curve -d 1 -p 0 0 0 -p 0 0 -1 -p 0 -0.176777 -1.073223 -p 0 -0.25 -1.25 -p 0 -0.176777 -1.426777 -p 0 0 -1.5 -p 0 0.176777 -1.426777 -p 0 0.25 -1.25 -p 0 0.176777 -1.073223 -p 0 0 -1 -p -0.125 0.125 -1.073223 -p -0.176777 0.176777 -1.25 -p -0.125 0.125 -1.426777 -p 0 0 -1.5 -p 0.125 -0.125 -1.426777 -p 0.176777 -0.176777 -1.25 -p 0.125 -0.125 -1.073223 -p 0 0 -1 -p 0.176777 0 -1.073223 -p 0.25 0 -1.25 -p 0.176777 0 -1.426777 -p 0 0 -1.5 -p -0.176777 0 -1.426777 -p -0.25 0 -1.25 -p -0.176777 0 -1.073223 -p 0 0 -1 -p -0.125 -0.125 -1.073223 -p -0.176777 -0.176777 -1.25 -p -0.125 -0.125 -1.426777 -p 0 0 -1.5 -p 0.125 0.125 -1.426777 -p 0.176777 0.176777 -1.25 -p 0.125 0.125 -1.073223 -p 0 0 -1 -p 0 -0.176777 -1.073223 -p 0 -0.25 -1.25 -p 0.176777 -0.176777 -1.25 -p 0.25 0 -1.25 -p 0.176777 0.176777 -1.25 -p 0 0.25 -1.25 -p -0.176777 0.176777 -1.25 -p -0.25 0 -1.25 -p -0.176777 -0.176777 -1.25 -p 0 -0.25 -1.25 -p 0.176777 -0.176777 -1.25 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19 -k 20 -k 21 -k 22 -k 23 -k 24 -k 25 -k 26 -k 27 -k 28 -k 29 -k 30 -k 31 -k 32 -k 33 -k 34 -k 35 -k 36 -k 37 -k 38 -k 39 -k 40 -k 41 -k 42 -k 43 -k 44 -n ($sel[$i] + "_CTRL")`;
+	        $con = `parentConstraint $sel[$i] $ctrl`;
+	        delete $con;
+
+	        $oGrp = `group -em -n ($sel[$i]+"Offset_GRP")`;
+	        $con = `parentConstraint $sel[$i] $oGrp`;
+        	delete $con;
+			$mGrp = `group -em -n ($sel[$i]+"Modify_GRP")`;
+			$con = `parentConstraint $sel[$i] $mGrp`;
+			delete $con;
+			parent $mGrp $oGrp;
+			parent $ctrl $mGrp;
+        	$cGrp = `group -em -n ($sel[$i]+"Con_GRP")`;
+        	$con = `parentConstraint $sel[$i] $cGrp`;
+        	delete $con;
+        	parent $cGrp $ctrl;
+			select -cl;
+    	}
+    	else
+    	{
+    		warning("Bhag Sala");
+    	}
+    }
+
+    return "arg_miniSphere";
+
+}
+
+global proc string arg_diamond()
+{
+    string $sel[] = `ls -sl`;
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++)
+    {
+    	if(($sel[$i]) == ($sel[$i]))
+    	{
+	        $ctrl = `curve -d 1 -p 0 0 1 -p 0 1 0 -p 0 0 -1 -p 0 -1 0 -p 0 0 1 -p 0.707107 -0.707107 0 -p 0 0 -1 -p 1 0 0 -p 0 0 1 -p -0.707107 -0.707107 0 -p 0 0 -1 -p 0.707107 0.707107 0 -p 0 0 1 -p -0.707107 0.707107 0 -p 0 0 -1 -p -1 0 0 -p 0 0 1 -p 1 0 0 -p 0.707107 0.707107 0 -p 0 1 0 -p -0.707107 0.707107 0 -p -1 0 0 -p -0.707107 -0.707107 0 -p 0 -1 0 -p 0.707107 -0.707107 0 -p 1 0 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19 -k 20 -k 21 -k 22 -k 23 -k 24 -k 25 -n ($sel[$i] + "_CTRL")`;
+	        $con = `parentConstraint $sel[$i] $ctrl`;
+	        delete $con;
+
+	        $oGrp = `group -em -n ($sel[$i]+"Offset_GRP")`;
+	        $con = `parentConstraint $sel[$i] $oGrp`;
+        	delete $con;
+			$mGrp = `group -em -n ($sel[$i]+"Modify_GRP")`;
+			$con = `parentConstraint $sel[$i] $mGrp`;
+			delete $con;
+			parent $mGrp $oGrp;
+			parent $ctrl $mGrp;
+        	$cGrp = `group -em -n ($sel[$i]+"Con_GRP")`;
+        	$con = `parentConstraint $sel[$i] $cGrp`;
+        	delete $con;
+        	parent $cGrp $ctrl;
+			select -cl;
+    	}
+    	else
+    	{
+    		warning("Bhag Sala");
+    	}
+    }
+
+    return "arg_diamond";
+
+}
+
+global proc string arg_minidiamond()
+{
+    string $sel[] = `ls -sl`;
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++)
+    {
+    	if(($sel[$i]) == ($sel[$i]))
+    	{
+	        $ctrl = `curve -d 1 -p 0 0 1 -p 0 1 0 -p 0 0 -1 -p 0 -1 0 -p 0 0 1 -p 1 0 0 -p 0 0 -1 -p -1 0 0 -p 0 0 1 -p 0 -1 0 -p -0.999503 0.000496515 0 -p 0 1 0 -p 1 0 0 -p 0 -1 0 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -n ($sel[$i] + "_CTRL")`;
+	        $con = `parentConstraint $sel[$i] $ctrl`;
+	        delete $con;
+
+	        $oGrp = `group -em -n ($sel[$i]+"Offset_GRP")`;
+	        $con = `parentConstraint $sel[$i] $oGrp`;
+        	delete $con;
+			$mGrp = `group -em -n ($sel[$i]+"Modify_GRP")`;
+			$con = `parentConstraint $sel[$i] $mGrp`;
+			delete $con;
+			parent $mGrp $oGrp;
+			parent $ctrl $mGrp;
+        	$cGrp = `group -em -n ($sel[$i]+"Con_GRP")`;
+        	$con = `parentConstraint $sel[$i] $cGrp`;
+        	delete $con;
+        	parent $cGrp $ctrl;
+			select -cl;
+    	}
+    	else
+    	{
+    		warning("Bhag Sala");
+    	}
+    }
+
+    return "arg_minidiamond";
+
+}

@@ -1,0 +1,74 @@
+global proc string arg_doIkFkLeg()
+{
+	string $side[] = {"l","r"};
+	string $ctrlGrp;
+	string $ik[];
+	for($i=0; $i<size($side); $i++)
+	{
+	string $hipJnt = ($side[$i] + "_hip_JA_JNT");
+	string $kneeJnt = ($side[$i] + "_knee_JA_JNT");
+	string $footJnt = ($side[$i] + "_foot_JA_JNT");
+	
+	if (`objExists $hipJnt`)
+	{
+		$ik = `ikHandle -n ($side[$i] + "_leg_IK") -sj $hipJnt -ee $footJnt`;
+		select -r $ik[0];
+		arg_circle;
+		
+		select -r $kneeJnt;
+		arg_circle;
+		
+		select -r ($side[$i] + "_knee_JA_Offset_GRP");
+		string $pole_vec = `searchReplaceNames ("knee_JA") ("legPoleVec") "hierarchy"`;
+		
+		float $hip_pos[] = `xform -q -ws -t ($side[$i] + "_hip_JA_JNT")`;
+		float $knee_pos[] = `xform -q -ws -t ($side[$i] + "_knee_JA_JNT")`;
+		float $foot_pos[] = `xform -q -ws -t ($side[$i] + "_foot_JA_JNT")`;
+		float $hip_to_foot[] = {($foot_pos[0]) - ($hip_pos[0]),($foot_pos[1]) - ($hip_pos[1]),($foot_pos[2]) - ($hip_pos[2])};
+		float $hip_to_foot_scaled[] = {($hip_to_foot[0] / 2),($hip_to_foot[1] / 2),($hip_to_foot[2] / 2)};
+		float $mid_point[] = {($hip_pos[0] + $hip_to_foot_scaled[0]),($hip_pos[1] + $hip_to_foot_scaled[1]),($hip_pos[2] + $hip_to_foot_scaled[2])};
+		float $mid_point_to_knee_vec[] = {($knee_pos[0] - $mid_point[0]),($knee_pos[1] - $mid_point[1]),($knee_pos[2] - $mid_point[2])};
+		float $mid_point_to_knee_vec_scaled[] = {($mid_point_to_knee_vec[0] * 5),($mid_point_to_knee_vec[1] * 5),($mid_point_to_knee_vec[2] * 5)};
+		float $mid_point_to_knee_point[] = {($mid_point[0] + $mid_point_to_knee_vec_scaled[0]),($mid_point[1] + $mid_point_to_knee_vec_scaled[1]),($mid_point[2] + $mid_point_to_knee_vec_scaled[2])};
+
+	
+		setAttr -type float3 ($pole_vec + ".translate") $mid_point_to_knee_point[0] $mid_point_to_knee_point[1] $mid_point_to_knee_point[2];
+		
+		poleVectorConstraint  ($side[$i] + "_legPoleVec_Con_GRP") ($side[$i] + "_leg_IK");
+		
+		parentConstraint -mo ($side[$i] + "_leg_IK_Con_GRP") $ik[0];
+		$ctrlGrp = `group -em -n($side[$i] + "_legControls_GRP")`;
+		parent ($side[$i] + "_leg_IK_Offset_GRP") ($side[$i] + "_legPoleVec_Offset_GRP") ($ctrlGrp);
+		$partsGrp = `group -em -n($side[$i] + "_legParts_GRP")`;
+		parent ($ik[0]) ($partsGrp);
+		$mainGrp = `group -em -n($side[$i] + "_leg_GRP")`;
+		parent ($ctrlGrp) ($partsGrp) ($mainGrp);
+	}
+	
+	if (`objExists $hipJnt`)
+	{
+		select -r $hipJnt;
+		arg_circle;
+		
+		select -r $kneeJnt;
+		arg_circle;
+		
+		select -r $footJnt;
+		arg_circle;
+		
+		parent ($side[$i] + "_hip_JA_Offset_GRP") ($side[$i] + "_knee_JA_Offset_GRP") ($side[$i] + "_foot_JA_Offset_GRP") $ctrlGrp;
+		
+		orientConstraint -mo ($side[$i] + "_hip_JA_Con_GRP") $hipJnt;
+		orientConstraint -mo ($side[$i] + "_knee_JA_Con_GRP") $kneeJnt;
+		orientConstraint -mo ($side[$i] + "_foot_JA_Con_GRP") $footJnt;
+		
+		parentConstraint -mo ($side[$i] + "_hip_JA_Con_GRP") ($side[$i] + "_knee_JA_Offset_GRP");
+		parentConstraint -mo ($side[$i] + "_knee_JA_Con_GRP") ($side[$i] + "_foot_JA_Offset_GRP");
+		
+		string $rev = `createNode reverse -n($side[$i] + "_leg_GRP_REV")`;
+		connectAttr -f ($rev + ".outputX") ($ik[0] + ".ikBlend");
+	}
+	
+	}
+	return "arg_doIkFkLeg";
+}

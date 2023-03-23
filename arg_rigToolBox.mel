@@ -1,0 +1,73 @@
+global proc arg_rigToolBox()
+{
+if (`window -exists rigToolBox`)
+{
+    deleteUI rigToolBox;
+}
+
+
+window -title "Rig Tool Box" rigToolBox;
+string $form = `formLayout`;
+string $tabs = `tabLayout -innerMarginWidth 5 -innerMarginHeight 5`;
+formLayout -edit -attachForm $tabs "top" 5 -attachForm $tabs "left" 5 -attachForm $tabs "bottom" 5 -attachForm $tabs "right"  5 $form;
+    
+    string $subToolA = `gridLayout -nc 2 -cwh 150 25`;
+        button -l "P-Pose" -bgc 0.9 0.3 0.3 -c ("arg_savePose(\"ProjectionPose\")");
+        button -l "GO TO" -bgc 0.9 0.3 0.3 -c ("arg_goTo(\"ProjectionPose\")");
+
+        button -l "T-Pose" -bgc 0.9 0.3 0.3 -c ("arg_savePose(\"TPose\")");
+        button -l "GO TO" -bgc 0.9 0.3 0.3 -c ("arg_goTo(\"TPose\")");
+
+        setParent ..;
+    
+    string $subToolB = `gridLayout -nc 1 -cwh 300 25`;
+        textField -tx "" naam;
+        button -l "CREATE JOINT CHAIN" -bgc 0.9 0.3 0.3 -c ("arg_createJntChain()");
+        setParent ..;
+
+    string $subToolC = `gridLayout -nc 2 -cwh 150 25`;
+        button -l "CIRCLE" -bgc 0.9 0.3 0.3 -c ("arg_circle()");
+        button -l "CUBE" -bgc 0.9 0.3 0.3 -c ("arg_cube()");
+        button -l "CYLINDER" -bgc 0.9 0.3 0.3 -c ("arg_cylinder()");
+        button -l "CONE" -bgc 0.9 0.3 0.3 -c ("arg_cone()");
+        button -l "SPHERE" -bgc 0.9 0.3 0.3 -c ("arg_sphere()");
+        button -l "PLUS" -bgc 0.9 0.3 0.3 -c ("arg_plus()");
+        button -l "ARROW" -bgc 0.9 0.3 0.3 -c ("arg_arrow()");
+        button -l "MOVE ALL" -bgc 0.9 0.3 0.3 -c ("arg_moveAll()");
+        button -l "PALM" -bgc 0.9 0.3 0.3 -c ("arg_palm()");
+        button -l "FINGER" -bgc 0.9 0.3 0.3 -c ("arg_fing()");
+        button -l "MINI SPHERE" -bgc 0.9 0.3 0.3 -c ("arg_miniSphere()");
+        button -l "DIAMOND" -bgc 0.9 0.3 0.3 -c ("arg_diamond()");
+        button -l "MINI DIAMOND" -bgc 0.9 0.3 0.3 -c ("arg_minidiamond()");
+        button -l "OFFSET GRP" -bgc 0.9 0.3 0.3 -c ("arg_offsetGrp()");
+        button -l "CON GRP" -bgc 0.9 0.3 0.3 -c "";
+        setParent ..;
+
+    string $subToolD = `gridLayout -nc 1 -cwh 300 25`;
+        textField -tx "" element;
+        textField -tx "" root;
+        button -l "CREATE" -bgc 0.9 0.3 0.3 -c ("arg_rigSkeleton()");
+        setParent ..;
+
+    string $subToolE = `frameLayout -label "ATTRIBUTES" -h 25 -w 300`;
+        checkBox -label "TRANSLATE";
+        checkBox -label "ROTATE";
+        checkBox -label "SCALE";
+        button -l "ADD TAG" -h 25 -bgc 0.9 0.3 0.3 -c "";
+        button -l "DELETE TAG" -h 25 -bgc 0.9 0.3 0.3 -c "";
+        setParent ..;
+
+    string $subToolF = `gridLayout -nc 1 -cwh 300 25`;
+        setParent ..;
+
+    tabLayout -edit
+        -tabLabel $subToolA "SKELETON UI"
+        -tabLabel $subToolB "BUILD UI"
+        -tabLabel $subToolC "CONTROLS UI"
+        -tabLabel $subToolD "RIG CREATION UI"
+        -tabLabel $subToolE "TAG UI"
+        -tabLabel $subToolF "CONNECTION MANAGER UI"
+        $tabs;
+
+showWindow rigToolBox;
+}

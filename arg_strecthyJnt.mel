@@ -1,0 +1,104 @@
+global proc string arg_stretchyJoint()
+{
+	string $loc[] = `ls -sl`;
+	string $startLoc = $loc[0];
+	string $endLoc = $loc[1];
+	string $upLoc = $loc[2];
+	string $sj;
+	string $ej;
+	string $aimCon[];
+	if( `objExists $startLoc` && `objExists $endLoc` && `objExists $upLoc` )
+	{
+		$sj = `createNode joint -n("stretchyJoint_JA_JNT")`;
+		matchTransform $sj $startLoc;
+		
+		$ej = `createNode joint -n("stretchyJoint_JEND_JNT")`;
+		matchTransform $ej $endLoc;
+		parent $ej $sj;
+		$aimCon = `aimConstraint -mo -weight 1 -aimVector 1 0 0 -upVector 0 1 0 -worldUpType "object" -worldUpObject $upLoc $endLoc $sj`;
+		connectAttr -f ($startLoc + ".translate") ($sj + ".translate");
+		
+		$ol = `getAttr ($ej + ".translateX")`;
+		
+		addAttr -ln "WorldScale" -nn "World Scale" -at double  -dv 1 $sj;
+		setAttr -e-keyable true ($sj + ".WorldScale");
+		
+		addAttr -ln "Stretch" -nn "Stretch" -at double  -min 0 -dv 1 $sj;
+		setAttr -e-keyable true ($sj + ".Stretch");
+		
+		addAttr -ln "Compression" -nn "Compression" -at double  -min 0 -dv 1 $sj;
+		setAttr -e-keyable true ($sj + ".Compression");
+		
+		addAttr -ln "OriginalLength" -nn "Original Length" -at double  -dv 0 $sj;
+		setAttr -e-keyable true ($sj + ".OriginalLength") ($ol);
+		
+		addAttr -ln "Aim" -nn "Aim" -at "enum" -en "Y+:Y-:" $sj;
+		setAttr -e-keyable true ($sj + ".Aim");
+		
+		addAttr -ln "PinPoint" -nn "Pin Point" -at double -min 0 -max 1  -dv 1 $sj;
+		setAttr -e-keyable true ($sj + ".PinPoint");
+		
+		//STRETCH
+		
+		$dist = `shadingNode -asUtility distanceBetween`;
+		connectAttr -f ($startLoc + ".translate") ($dist + ".point1");
+		connectAttr -f ($endLoc + ".translate") ($dist + ".point2");
+		
+		$mdScale = `createNode multiplyDivide -n("scaleValue_MD")`;
+		setAttr ($mdScale + ".operation") 2;
+		connectAttr -f ($dist + ".distance") ($mdScale + ".input1X");
+		setAttr ($mdScale + ".input2X") ($ol);
+		
+		$mdStretch = `createNode multiplyDivide -n("stretchValue_MD")`;
+		connectAttr -f ($mdScale + ".outputX") ($mdStretch + ".input1X");
+		connectAttr -f ($sj + ".Stretch") ($mdStretch + ".input2X");
+		
+		$conStretch = `createNode condition -n("stretch_CON")`;
+		connectAttr -f ($mdStretch + ".outputX") ($conStretch + ".colorIfTrueR");
+		connectAttr -f ($sj + ".Stretch") ($conStretch + ".firstTerm");
+		setAttr ($conStretch + ".secondTerm") 1;
+		setAttr ($conStretch + ".operation") 3;
+		connectAttr -f ($conStretch + ".outColorR") ($sj + ".scaleX");
+		
+		//COMPRESSION
+		$mdRoot = `createNode multiplyDivide -n("rootValue_MD")`;
+		connectAttr -f ($mdScale + ".outputX") ($mdRoot + ".input1X");
+		setAttr ($mdRoot + ".input2X") (0.5);
+		setAttr ($mdRoot + ".operation") 3;
+		
+		$mdPerUnit = `createNode multiplyDivide -n("comPerUnit_MD")`;
+		connectAttr -f ($mdRoot + ".outputX") ($mdPerUnit + ".input2X");
+		setAttr ($mdPerUnit + ".input1X") 1;
+		setAttr ($mdPerUnit + ".operation") 2;
+		
+		$mdCom = `createNode multiplyDivide -n("comValue_MD")`;
+		connectAttr -f ($mdPerUnit + ".outputX") ($mdCom + ".input1X");
+		connectAttr -f ($mdPerUnit + ".outputX") ($mdCom + ".input1Y");
+		connectAttr -f ($sj + ".Compression") ($mdCom + ".input2X");
+		connectAttr -f ($sj + ".Compression") ($mdCom + ".input2Y");
+		
+		$conComp = `createNode condition -n("comp_CON")`;
+		connectAttr -f ($mdCom + ".outputX") ($conComp + ".colorIfTrueR");
+		connectAttr -f ($mdCom + ".outputY") ($conComp + ".colorIfTrueG");
+		connectAttr -f ($sj + ".Compression") ($conComp + ".firstTerm");
+		setAttr ($conComp +".secondTerm") 1;
+		setAttr ($conComp + ".operation") 3;
+		connectAttr -f ($conComp + ".outColorR") ($sj + ".scaleY");
+		connectAttr -f ($conComp + ".outColorG") ($sj + ".scaleZ");
+		
+		
+		
+		$startLocGrp = `group -n("stretchyJointStart_Offset_GRP") $startLoc`;
+		$endLocGrp = `group -n("stretchyJointEnd_Offset_GRP") $endLoc`;
+		$upLocGrp = `group -n("stretchyJointUp_Offset_GRP") $upLoc`;
+		$stretchyGrp = `group -em -n("stretchyJoint_GRP")`;
+		$mainGrp = `group -em -n("stretchyJointTop_GRP")`;
+		parent $sj $startLocGrp $endLocGrp $upLocGrp $stretchyGrp;
+		parent $stretchyGrp $mainGrp;
+		
+		arg_setDrivenKeyframe($sj, {"Aim"}, {(0)}, {(1)}, $aimCon[0], {"aimVectorX"}, {(1)}, {(-1)}, "linear");
+		setAttr ($sj + ".Aim") 0;
+		setAttr ($ej + ".radius") 0;
+	}
+	return "arg_stretchyJoint";
+}

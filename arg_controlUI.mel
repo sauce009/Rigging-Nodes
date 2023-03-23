@@ -1,0 +1,39 @@
+global proc arg_controlUI()
+{
+if (`window -exists ctrlToolBox`)
+{
+    deleteUI ctrlToolBox;
+}
+
+
+window -title "CTRL Tool Box" ctrlToolBox;
+string $form = `formLayout`;
+string $tabs = `tabLayout -innerMarginWidth 5 -innerMarginHeight 5`;
+formLayout -edit -attachForm $tabs "top" 5 -attachForm $tabs "left" 5 -attachForm $tabs "bottom" 5 -attachForm $tabs "right"  5 $form;
+    
+    string $subToolA = `gridLayout -nc 3 -cwh 125 50`;
+    string $pose[] = {"P-Pose","T-Pose"};
+        button -l "" -bgc 1.0 0.0 0.0 -c ("arg_ctrlColour, 13");
+        button -l "" -bgc 0.0 1.0 0.0 -c ("");
+        button -l "" -bgc 0.0 0.0 1.0 -c ("");
+        button -l "" -bgc 1.0 0.0 1.0 -c ("");
+        button -l "" -bgc 1.0 1.0 0.0 -c ("");
+        button -l "" -bgc 0.0 1.0 1.0 -c ("");
+        setParent ..;
+    tabLayout -edit
+        -tabLabel $subToolA "COLOUR UI"
+        $tabs;
+
+showWindow ctrlToolBox;
+}arg_controlUI;
+
+
+global proc arg_ctrlColour(int $red)
+{
+	string $sel[] = `ls -sl`;
+	for( $i=0; $i<size($sel); $i++ )
+	{
+		setAttr ($sel[$i] + ".overrideColor") $red;
+		setAttr ($sel[$i] + ".overrideColor") 6;
+	}
+}

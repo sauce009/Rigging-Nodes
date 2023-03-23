@@ -1,0 +1,70 @@
+global proc string arg_rigSkeleton()
+{
+	string $element = `textField -q -tx element`;
+	string $root = `textField -q -tx root`;
+	string $child[] = `listRelatives -ad $root`;
+	string $skel[] = {$root};
+	string $grp;
+	string $ctrl;
+	string $top;
+	string $attr[] = {"tx","ty","tz","rx","ry","rz","sx","sy","sz"};
+	if ($root == $root)
+	{
+		for ($each in $skel)
+		{
+			$grp = `group -em -n "skeleton_GRP"`;
+			parent $each $grp;
+			$ctrl = `curve -d 1 -p -0.378842 0 -2 -p 0.378842 0 -2 -p 0.378842 0 -0.92388 -p 0.587785 0 -0.809017 -p 0.809017 0 -0.587785 -p 0.92388 0 -0.378842 -p 2 0 -0.378842 -p 2 0 0.378842 -p 0.92388 0 0.378842 -p 0.809017 0 0.587785 -p 0.587785 0 0.809017 -p 0.378842 0 0.92388 -p 0.378842 0 2 -p -0.378842 0 2 -p -0.378842 0 0.92388 -p -0.587785 0 0.809017 -p -0.809017 0 0.587785 -p -0.92388 0 0.378842 -p -2 0 0.378842 -p -2 0 -0.378842 -p -0.92388 0 -0.378842 -p -0.809017 0 -0.587785 -p -0.587785 0 -0.809017 -p -0.378842 0 -0.92388 -p -0.378842 0 -2 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19 -k 20 -k 21 -k 22 -k 23 -k 24 -n "global_CTRL"`;
+			parent $grp $ctrl;
+			$top = `group -em -n ("rigSkeleton_" + $element + "_Top_GRP")`;
+			parent $ctrl $top;
+			$setA = `sets -n ("skeletonCache_" + $element + "_hubSet") $each`;
+			$setB = `sets -name ("rigSkeleton_" + $element + "_hubSet") $top $setA`;
+			sets -in $setA $child;
+		}
+
+		for($i=0; $i<size($attr); $i++)
+		{
+			setAttr -lock true -keyable false -channelBox false ($ctrl + "." + $attr[$i]);
+			setAttr -lock true -keyable false -channelBox false ($ctrl + ".v");
+		}
+		
+			addAttr -ln "RotateOrder" -nn "Rotate Order" -at "enum" -en "xyz:yzx:zxy:xzy:yxz:zyx:";
+			setAttr -e-keyable true ($ctrl + ".RotateOrder") 4;
+			
+			addAttr -ln "DisplayVisiblity" -nn "Display Visiblity" -at "enum" -en "__________:";
+			setAttr -e-keyable true -lock true ($ctrl + ".Display Visiblity");
+			
+			addAttr -ln "SkeletonVis" -nn "Skeleton Vis" -at "double" -defaultValue 1 -minValue 0 -maxValue 1;
+			setAttr -e-channelBox true ($ctrl + ".Skeleton Vis") 1;
+			
+			addAttr -ln "DisplayType" -nn "Display Type" -at "enum" -en "__________:";
+			setAttr -e-channelBox true -lock true ($ctrl + ".Display Type");
+			
+			addAttr -ln "SkeletonType" -nn "Skeleton Type" -at "enum" -en "normal:template:reference:";
+			setAttr -e-channelBox true ($ctrl + ".Skeleton Type");
+			
+			addAttr -ln "ConnectMethod" -nn "Connect Method" -at "enum" -en "7:";
+			setAttr -e-channelBox true -lock true ($ctrl + ".Connect Method");
+
+			addAttr -ln "ConnectID"  -dt "string";
+			setAttr -e-keyable true -type "string" ($ctrl + ".ConnectID") $ctrl;
+
+			connectAttr -f ($ctrl + ".SkeletonVis") ($grp + ".visibility");
+			setAttr ($grp+".overrideEnabled") 1;
+			connectAttr -f ($ctrl + ".SkeletonType") ($grp + ".overrideDisplayType");
+			setAttr ($ctrl + ".SkeletonType") 2;
+
+		for($i=0; $i<size($attr); $i++)
+		{
+			setAttr -lock true -keyable false -channelBox false ($top + "." + $attr[$i]);
+		}
+	}
+	else
+	{
+		warning("Bhag Sala");
+	}
+	
+	return "arg_rigSkeleton";
+	
+}

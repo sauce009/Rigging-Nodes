@@ -1,0 +1,91 @@
+global proc arg_poseDefLoc()
+{
+	string $side = "r";
+	string $poseName = "shoulderUp";
+	string $parentJnt = ($side + "_" + "clavicle_JA_JNT");
+	string $childJnt = ($side + "_" + "shoulder_JA_JNT");
+	string $poseLoc[] = {"argPoseDeformer_LOC"};
+	string $angleLoc[] = {($side + "_" + $poseName + "Def_LOC")};
+	string $vp = ($side + "_" + $poseName + "_VP");
+	string $up = ($side + "_" + $poseName + "Up_VP");
+	string $ab = ($side + "_" + $poseName + "Up_AB");
+	float $angle[] = `getAttr ($childJnt + ".rotate")`;
+	rotate 0 0 0 $childJnt;;
+	
+	if (`objExists $poseLoc[0]`)
+	{
+		addAttr -ln ($side + "_" + $poseName) -nn ($side + "_" + $poseName) -at double  -dv 0 $poseLoc[0];
+		setAttr -e-keyable true ($poseLoc[0] + "." + $side + "_" + $poseName);
+	} else {
+		$poseLoc = `spaceLocator -n "argPoseDeformer_LOC"`;
+		addAttr -ln ($side + "_" + $poseName) -nn ($side + "_" + $poseName) -at double  -dv 0 $poseLoc[0];
+		setAttr -e-keyable true ($poseLoc[0] + "." + $side + "_" + $poseName);
+	}
+	
+	if (`objExists $angleLoc[0]`)
+	{
+		string $conn[] = `parentConstraint $childJnt $angleLoc`;
+		delete $conn;
+		
+		addAttr -ln "PoseAngle" -nn "Pose  Angle" -at double  -dv 0 $angleLoc[0];
+		setAttr -e-keyable true ($angleLoc[0] + ".PoseAngle");
+		
+		addAttr -ln "PoseSDK" -nn "Pose  SDK" -at double  -dv 0 $angleLoc[0];
+		setAttr -e-keyable true ($angleLoc[0] + ".PoseSDK");
+	} else {
+		$angleLoc = `spaceLocator -n($side + "_" + $poseName + "Def_LOC")`;
+		
+		string $conn[] = `parentConstraint $childJnt $angleLoc`;
+		delete $conn;
+		
+		addAttr -ln "PoseAngle" -nn "Pose  Angle" -at double  -dv 0 $angleLoc[0];
+		setAttr -e-keyable true ($angleLoc[0] + ".PoseAngle");
+		
+		addAttr -ln "PoseSDK" -nn "Pose  SDK" -at double  -dv 0 $angleLoc[0];
+		setAttr -e-keyable true ($angleLoc[0] + ".PoseSDK");
+		
+		arg_setDrivenKeyframe($angleLoc[0], {"PoseAngle"}, {(0)}, {(45)}, $angleLoc[0], {"PoseSDK"}, {(0)}, {(1)}, "linear");
+		
+	}
+	
+	if (`objExists $vp`)
+	{
+		setAttr ($vp + ".operation") 3;
+		setAttr ($vp + ".input1Y") 1;
+	} else {
+		$vp = `createNode vectorProduct -n ($side + "_" + $poseName + "_VP")`;
+		
+		setAttr ($vp + ".operation") 3;
+		setAttr ($vp + ".input1Y") 1;
+	}
+	
+	if (`objExists $up`)
+	{
+		setAttr ($up + ".operation") 3;
+		setAttr ($up + ".input1Y") 1;
+	} else {
+		$up = `createNode vectorProduct -n ($side + "_" + $poseName + "_UP_VP")`;
+		
+		setAttr ($up + ".operation") 3;
+		setAttr ($up + ".input1Y") 1;
+	}
+	
+	if (`objExists $ab`)
+	{
+		
+	} else {
+		$ab = `createNode angleBetween -n ($side + "_" + $poseName + "_AB")`;
+	}
+		
+	connectAttr -f ($ab + ".angle") ($angleLoc[0] + ".PoseAngle");
+	connectAttr -f ($angleLoc[0] + ".PoseSDK") ($poseLoc[0] + "." + $side + "_" + $poseName);
+	
+	connectAttr -f ($childJnt + ".worldMatrix") ($vp + ".matrix");
+	connectAttr -f ($angleLoc[0] + ".worldMatrix") ($up + ".matrix");
+	connectAttr -f ($up + ".output") ($ab + ".vector1");
+	connectAttr -f ($vp + ".output") ($ab + ".vector2");
+	
+	parent $angleLoc[0] $parentJnt;
+	
+	parent $poseLoc[0] "rig_GRP";
+}

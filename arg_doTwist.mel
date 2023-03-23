@@ -1,0 +1,163 @@
+global proc string arg_doUpperTwist(string $sj, string $ee)
+{
+	int $no = 5;
+	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	string $ik[] = `ikHandle -sol ikSplineSolver -ns 2 -sj ($sj) -ee ($ee)`;
+	delete;
+	string $cv = `rename $ik[2] ($sj+ "Twst_CRV")`;
+	string $twstJnt[];
+	string $pCV[];
+	string $loc[];
+	string $tanLoc[];
+	string $modGrp[];
+	string $offGrp[];
+	string $md[];
+	for ($i=0; $i<$no; $i++)
+	{
+		$twstJnt[$i] = `createNode joint -n( $sj + "twist_J"+$lib[$i]+"_JNT" )`;
+		$pCV[$i] = `createNode pointOnCurveInfo -n( $sj + "pntCVTwist"+$lib[$i] )`;
+		$loc = `spaceLocator -n( $sj + "twist"+$lib[$i]+"_LOC" )`;
+		$tanLoc = `spaceLocator -n( $sj + "tan"+$lib[$i]+"_LOC" )`;
+		$modGrp[$i] = `group -n( $sj + "twist"+$lib[$i]+"Modify_GRP" ) ( $sj + "twist"+$lib[$i]+"_LOC" )`;
+		$offGrp[$i] = `group -n( $sj + "twist"+$lib[$i]+"Offset_GRP" ) ( $modGrp[$i] )`;
+		$md[$i] = `createNode multiplyDivide -n($sj + "mult" + $lib[$i])`;
+		connectAttr -f( $cv+"Shape.worldSpace") ($pCV[$i]+".inputCurve");
+		connectAttr -f ($pCV[$i]+".position") ($twstJnt[$i]+".translate");
+		connectAttr -f ($sj+".rotateY") ($md[$i]+".input1Y");
+		connectAttr -f ($md[$i]+".outputY") ( $sj + "tan" + $lib[$i] + "_LOC" + ".rotateY" );
+		setAttr ($pCV[$i]+".turnOnPercentage") (1);
+	}
+	
+	$tanGrp = `group -n ("armTanLoc_GRP") ( $sj + "tan"+$lib[0]+"_LOC" ) ( $sj + "tan"+$lib[1]+"_LOC" ) ( $sj + "tan"+$lib[2]+"_LOC" ) ( $sj + "tan"+$lib[3]+"_LOC" ) ( $sj + "tan"+$lib[4]+"_LOC" )`;
+	parentConstraint $sj $tanGrp ;
+	$conA = `parentConstraint $sj ( $sj + "twist"+$lib[0]+"Offset_GRP" )`;
+	$conE = stringArrayCatenate((`pointConstraint $ee ( $sj + "twist"+$lib[4]+"Offset_GRP" )`),(`orientConstraint $sj ( $sj + "twist"+$lib[4]+"Offset_GRP" )`));
+	
+	
+	$conC = `pointConstraint $sj $ee ( $sj + "twist"+$lib[2]+"Offset_GRP" )`;
+	$conF = `orientConstraint $sj ( $sj + "twist"+$lib[2]+"Offset_GRP" )`;
+	$conB = `parentConstraint $sj ( $sj + "twist"+$lib[2]+"Offset_GRP" ) ( $sj + "twist"+$lib[1]+"Offset_GRP" )`;
+	$conD = `parentConstraint ( $sj + "twist"+$lib[2]+"Offset_GRP" ) ( $sj + "twist"+$lib[4]+"Offset_GRP" ) ( $sj + "twist"+$lib[3]+"Offset_GRP" )`;
+	
+	delete $conA $conB $conC $conD $conE $conF;
+	$grp = `group -em -n ( $sj + "twist_GRP" )`;
+	parentConstraint $sj ( $grp );
+	parent ( $sj + "twist"+$lib[0]+"Offset_GRP" ) ( $sj + "twist"+$lib[1]+"Offset_GRP" ) ( $sj + "twist"+$lib[2]+"Offset_GRP" ) ( $sj + "twist"+$lib[3]+"Offset_GRP" ) ( $sj + "twist"+$lib[4]+"Offset_GRP" ) $grp;
+	
+	connectAttr -f ($sj + "twist" + $lib[0]+"_LOC"+"Shape.worldPosition[0]") ($cv+"Shape.controlPoints[0]");
+	connectAttr -f ($sj + "twist" + $lib[1]+"_LOC"+"Shape.worldPosition[0]") ($cv+"Shape.controlPoints[1]");
+	connectAttr -f ($sj + "twist" + $lib[2]+"_LOC"+"Shape.worldPosition[0]") ($cv+"Shape.controlPoints[2]");
+	connectAttr -f ($sj + "twist" + $lib[3]+"_LOC"+"Shape.worldPosition[0]") ($cv+"Shape.controlPoints[3]");
+	connectAttr -f ($sj + "twist" + $lib[4]+"_LOC"+"Shape.worldPosition[0]") ($cv+"Shape.controlPoints[4]");
+	
+	setAttr ($pCV[0]+".parameter") (0);
+	setAttr ($pCV[1]+".parameter") (0.2);
+	setAttr ($pCV[2]+".parameter") (0.5);
+	setAttr ($pCV[3]+".parameter") (0.8);
+	setAttr ($pCV[4]+".parameter") (1);
+	
+	tangentConstraint -n("tngntCon"+$lib[0]) -weight 1 -aimVector 0 -1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector -0 0 1 -worldUpObject ( $sj + "tan"+$lib[0]+"_LOC" ) $cv $twstJnt[0];
+	tangentConstraint -n("tngntCon"+$lib[1]) -weight 1 -aimVector 0 -1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector -0 0 1 -worldUpObject ( $sj + "tan"+$lib[1]+"_LOC" ) $cv $twstJnt[1];
+	tangentConstraint -n("tngntCon"+$lib[2]) -weight 1 -aimVector 0 -1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector -0 0 1 -worldUpObject ( $sj + "tan"+$lib[2]+"_LOC" ) $cv $twstJnt[2];
+	tangentConstraint -n("tngntCon"+$lib[3]) -weight 1 -aimVector 0 -1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector -0 0 1 -worldUpObject ( $sj + "tan"+$lib[3]+"_LOC" ) $cv $twstJnt[3];
+	tangentConstraint -n("tngntCon"+$lib[4]) -weight 1 -aimVector 0 -1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector -0 0 1 -worldUpObject ( $sj + "tan"+$lib[4]+"_LOC" ) $cv $twstJnt[4];
+	
+	setAttr ($md[0]+".input2Y") (1);
+	setAttr ($md[1]+".input2Y") (0.75);
+	setAttr ($md[2]+".input2Y") (0.5);
+	setAttr ($md[3]+".input2Y") (0.25);
+	setAttr ($md[4]+".input2Y") (0);
+	
+	string $twstGrp = `group -em -n ($sj + "Twist_GRP")`;
+	parent $cv $twstJnt $tanGrp $grp $twstGrp;
+	
+	return "arg_doUpperTwist";
+}
+
+
+global proc string arg_doLowerTwist(string $sj, string $ee)
+{
+	int $no = 5;
+	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	string $ik[] = `ikHandle -sol ikSplineSolver -ns 2 -sj ($ee) -ee ($sj)`;
+	delete;
+	string $cv = `rename $ik[2] ($sj+ "Twst_CRV")`;
+	string $twstJnt[];
+	string $pCV[];
+	string $loc[];
+	string $tanLoc[];
+	string $modGrp[];
+	string $offGrp[];
+	string $md[];
+	for ($i=0; $i<$no; $i++)
+	{
+		$twstJnt[$i] = `createNode joint -n( $sj + "twist_J"+$lib[$i]+"_JNT" )`;
+		$pCV[$i] = `createNode pointOnCurveInfo -n( $sj + "pntCVTwist"+$lib[$i] )`;
+		$loc = `spaceLocator -n( $sj + "twist"+$lib[$i]+"_LOC" )`;
+		$tanLoc = `spaceLocator -n( $sj + "tan"+$lib[$i]+"_LOC" )`;
+		$modGrp[$i] = `group -n( $sj + "twist"+$lib[$i]+"Modify_GRP" ) ( $sj + "twist"+$lib[$i]+"_LOC" )`;
+		$offGrp[$i] = `group -n( $sj + "twist"+$lib[$i]+"Offset_GRP" ) ( $modGrp[$i] )`;
+		$md[$i] = `createNode multiplyDivide -n($sj + "mult" + $lib[$i])`;
+		connectAttr -f( $cv+"Shape.worldSpace") ($pCV[$i]+".inputCurve");
+		connectAttr -f ($pCV[$i]+".position") ($twstJnt[$i]+".translate");
+		connectAttr -f ($sj+".rotateY") ($md[$i]+".input1Y");
+		connectAttr -f ($md[$i]+".outputY") ( $sj + "tan" + $lib[$i] + "_LOC" + ".rotateY" );
+		setAttr ($pCV[$i]+".turnOnPercentage") (1);
+	}
+	
+	$tanGrp = `group -n ("armTanLoc_GRP") ( $sj + "tan"+$lib[0]+"_LOC" ) ( $sj + "tan"+$lib[1]+"_LOC" ) ( $sj + "tan"+$lib[2]+"_LOC" ) ( $sj + "tan"+$lib[3]+"_LOC" ) ( $sj + "tan"+$lib[4]+"_LOC" )`;
+	parentConstraint $ee $tanGrp ;
+	$conA = `parentConstraint $sj ( $sj + "twist"+$lib[0]+"Offset_GRP" )`;
+	$conE = stringArrayCatenate((`pointConstraint $ee ( $sj + "twist"+$lib[4]+"Offset_GRP" )`),(`orientConstraint $sj ( $sj + "twist"+$lib[4]+"Offset_GRP" )`));
+	
+	
+	$conC = `pointConstraint $sj $ee ( $sj + "twist"+$lib[2]+"Offset_GRP" )`;
+	$conF = `orientConstraint $sj ( $sj + "twist"+$lib[2]+"Offset_GRP" )`;
+	$conB = `parentConstraint $sj ( $sj + "twist"+$lib[2]+"Offset_GRP" ) ( $sj + "twist"+$lib[1]+"Offset_GRP" )`;
+	$conD = `parentConstraint ( $sj + "twist"+$lib[2]+"Offset_GRP" ) ( $sj + "twist"+$lib[4]+"Offset_GRP" ) ( $sj + "twist"+$lib[3]+"Offset_GRP" )`;
+	
+	delete $conA $conB $conC $conD $conE $conF;
+	$grp = `group -em -n ( $sj + "twist_GRP" )`;
+	$conG = `parentConstraint $sj $grp`;
+	delete $conG;
+	parentConstraint $ee ( $grp );
+	parent ( $sj + "twist"+$lib[0]+"Offset_GRP" ) ( $sj + "twist"+$lib[1]+"Offset_GRP" ) ( $sj + "twist"+$lib[2]+"Offset_GRP" ) ( $sj + "twist"+$lib[3]+"Offset_GRP" ) ( $sj + "twist"+$lib[4]+"Offset_GRP" ) $grp;
+	
+	connectAttr -f ($sj + "twist" + $lib[0]+"_LOC"+"Shape.worldPosition[0]") ($cv+"Shape.controlPoints[0]");
+	connectAttr -f ($sj + "twist" + $lib[1]+"_LOC"+"Shape.worldPosition[0]") ($cv+"Shape.controlPoints[1]");
+	connectAttr -f ($sj + "twist" + $lib[2]+"_LOC"+"Shape.worldPosition[0]") ($cv+"Shape.controlPoints[2]");
+	connectAttr -f ($sj + "twist" + $lib[3]+"_LOC"+"Shape.worldPosition[0]") ($cv+"Shape.controlPoints[3]");
+	connectAttr -f ($sj + "twist" + $lib[4]+"_LOC"+"Shape.worldPosition[0]") ($cv+"Shape.controlPoints[4]");
+	
+	setAttr ($pCV[0]+".parameter") (0);
+	setAttr ($pCV[1]+".parameter") (0.2);
+	setAttr ($pCV[2]+".parameter") (0.5);
+	setAttr ($pCV[3]+".parameter") (0.8);
+	setAttr ($pCV[4]+".parameter") (1);
+	
+	tangentConstraint -n("tngntCon"+$lib[0]) -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector -0 0 1 -worldUpObject ( $sj + "tan"+$lib[0]+"_LOC" ) $cv $twstJnt[0];
+	tangentConstraint -n("tngntCon"+$lib[1]) -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector -0 0 1 -worldUpObject ( $sj + "tan"+$lib[1]+"_LOC" ) $cv $twstJnt[1];
+	tangentConstraint -n("tngntCon"+$lib[2]) -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector -0 0 1 -worldUpObject ( $sj + "tan"+$lib[2]+"_LOC" ) $cv $twstJnt[2];
+	tangentConstraint -n("tngntCon"+$lib[3]) -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector -0 0 1 -worldUpObject ( $sj + "tan"+$lib[3]+"_LOC" ) $cv $twstJnt[3];
+	tangentConstraint -n("tngntCon"+$lib[4]) -weight 1 -aimVector 0 1 0 -upVector 0 0 1 -worldUpType "objectrotation" -worldUpVector -0 0 1 -worldUpObject ( $sj + "tan"+$lib[4]+"_LOC" ) $cv $twstJnt[4];
+	
+	setAttr ($md[0]+".input2Y") (1);
+	setAttr ($md[1]+".input2Y") (0.75);
+	setAttr ($md[2]+".input2Y") (0.5);
+	setAttr ($md[3]+".input2Y") (0.25);
+	setAttr ($md[4]+".input2Y") (0);
+	
+	string $kGrp = `group -em -n ($ee+"Split_GRP")`;
+	$conG = `parentConstraint $sj $kGrp`;
+	delete $conG;
+	parent $kGrp $grp;
+	parent $offGrp $kGrp;
+	string $jntGrp = `group -em -n ($sj + "TwistJnt_GRP")`;
+	parent $twstJnt $jntGrp;
+	setAttr ($jntGrp + ".inheritsTransform") 0;
+	string $twstGrp = `group -em -n ($sj + "Twist_GRP")`;
+	parent $cv $jntGrp $tanGrp $grp $twstGrp;
+	
+	
+	return "arg_doLowerTwist";
+}

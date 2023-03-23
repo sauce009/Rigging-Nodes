@@ -1,0 +1,17 @@
+global proc string arg_rigBound()
+{
+	string $element = "charGorilla";
+	string $skel = ("rigSkeleton_" + $element + "_Top_GRP");
+	string $model = "model_GRP";
+	parent $model $skel;
+	rename $skel ("rigBound_" + $element + "_Top_GRP");
+	rename ("rigSkeleton_" + $element + "_hubSet") ("rigBound_" + $element + "_hubSet");
+	string $geoSet = `sets -n ("geometryCache_" + $element + "_hubSet") "pSphere1"`;
+	sets -in ("rigBound_" + $element + "_hubSet") $geoSet;
+	group -em -n"rig_GRP";
+	group -em -n"rigModel_GRP";
+	parent rig_GRP global_CTRL;
+	parent rigModel_GRP model_GRP;
+
+	return "arg_rigBound";	
+}

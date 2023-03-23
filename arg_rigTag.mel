@@ -1,0 +1,58 @@
+global proc string arg_tag(){
+      string $sel[] = sort(stringArrayCatenate((`ls -sl`),(`listRelatives -ad -typ "joint"`)));
+      for ($i=0; $i<size($sel); $i++)
+      {    
+                  addAttr -ln "ConnectMethod" -nn "ConnectMethod" -at "enum" -en "1:2:" $sel[$i];
+                  setAttr -e-keyable true ($sel[$i] + ".ConnectMethod");
+                  addAttr -ln "ConnectID"  -dt "string" $sel[$i];
+                  setAttr -e-keyable true -type "string" ($sel[$i] + ".ConnectID")$sel[$i];
+      }
+
+return "arg_tag";
+
+}
+
+
+global proc arg_deleteTag()
+{
+	string $sel[] = sort(stringArrayCatenate((`ls -sl`),(`listRelatives -ad -typ "joint"`)));
+	string $tag;
+	for($i=0; $i<size($sel); $i++)
+	{
+		if (`attributeExists "ConnectID" $sel[$i]` && `attributeExists "ConnectMethod" $sel[$i]`)
+		{
+			catch (`deleteAttr -attribute "ConnectMethod" $sel[$i]`);
+			catch (`deleteAttr -attribute "ConnectID" $sel[$i]`);
+		}
+	}
+	
+	
+}
+
+
+global proc string arg_con()
+{
+	string $sel[] = `ls -sl`;
+	string $bound[] = `listRelatives -ad -typ "joint" -f $sel[0]`;
+	string $puppet[] = `listRelatives -ad -typ "joint" -f $sel[1]`;
+	string $pup[] = `listRelatives -ad -typ "joint" "puppet"`;
+	for ($i=0; $i<size($bound); $i++)
+	{
+		string $tag = `getAttr ($bound[$i] +".ConnectID")`;
+		string $conn = `getAttr ($bound[$i] +".ConnectMethod")`;
+		if($tag == $pup[$i])
+		{
+			if($conn == 0)
+			{
+				$con = `pointConstraint $puppet[$i] $bound[$i]`;
+			}
+			else
+			{
+				print "Bhag sala";
+			}
+		}
+	}
+	
+return "arg_con";
+
+}

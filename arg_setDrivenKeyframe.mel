@@ -1,0 +1,32 @@
+global proc string arg_setDrivenKeyframe(string $driver, string $driverAttr[], float $sdra[], float $edra[], string $driven, string $drivenAttr[], float $sdva[], float $edva[], string $graph)
+{
+	for($i=0; $i<size($sdra); $i++)
+	{
+		for($i=0; $i<size($driverAttr); $i++)
+		{
+			setAttr ($driver + "." + $driverAttr[$i]) ($sdra[$i]);
+			setAttr ($driven + "." + $drivenAttr[$i]) ($sdva[$i]);
+			setDrivenKeyframe -currentDriver ($driver + "." + $driverAttr[$i]) ($driven + "." + $drivenAttr[$i]);
+		}
+	}
+	
+	for($i=0; $i<size($edra); $i++)
+	{
+		for($i=0; $i<size($driverAttr); $i++)
+		{
+			setAttr ($driver + "." + $driverAttr[$i]) ($edra[$i]);
+			setAttr ($driven + "." + $drivenAttr[$i]) ($edva[$i]);
+			setDrivenKeyframe -currentDriver ($driver + "." + $driverAttr[$i]) ($driven + "." + $drivenAttr[$i]);
+		}
+	}
+	
+	for($i=0; $i<size($edra); $i++)
+	{
+		for($i=0; $i<size($driverAttr); $i++)
+		{
+			selectKey -add -k -f ($sdva[$i]) -f ($edva[$i]) ($driven + "." + $driverAttr[$i]) ;
+			keyTangent -itt linear -ott $graph;
+		}
+	}
+	return "arg_setDrivenKeyframe";
+}

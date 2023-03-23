@@ -1,0 +1,7 @@
+global proc string arg_rigPuppet()
+{
+	select -r pelvis_JA_JNT;
+	arg_goTo("TPose");
+
+	return "arg_rigPuppet";	
+}

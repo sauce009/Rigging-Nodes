@@ -1,0 +1,13 @@
+global proc arg_Connection()
+{
+    string $sel[] = `ls -sl`;
+    if( `attributeExists "ConnectID" $sel[0]` )
+    {
+        parentConstraint $sel[0] $sel[1];
+        scaleConstraint $sel[0] $sel[1];
+    }
+    else 
+    {
+        warning("Bhag Sala");
+    }
+}

@@ -1,0 +1,206 @@
+global proc string arg_doVolJnt()
+{
+	string $jnt[] = `ls -sl`;
+	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	string $volJnt;
+	string $volX;
+	string $posX[];
+	
+	for($i=0; $i<size($jnt); $i++)
+	{
+		$volJnt = `createNode joint -n("VOL" + $jnt[$i])`;
+		
+		addAttr -ln "POSX" -nn "POS X" -at double  -min 0 -dv 15 $volJnt;
+		setAttr -e-keyable true ($volJnt + ".POSX");
+		
+		addAttr -ln "NEGX" -nn "NEG X" -at double  -min 0 -dv 15 $volJnt;
+		setAttr -e-keyable true ($volJnt + ".NEGX");
+		
+		addAttr -ln "POSY" -nn "POS Y" -at double  -min 0 -dv 15 $volJnt;
+		setAttr -e-keyable true ($volJnt + ".POSY");
+		
+		addAttr -ln "NEGY" -nn "NEG Y" -at double  -min 0 -dv 15 $volJnt;
+		setAttr -e-keyable true ($volJnt + ".NEGY");
+		
+		addAttr -ln "POSZ" -nn "POS Z" -at double  -min 0 -dv 15 $volJnt;
+		setAttr -e-keyable true ($volJnt + ".POSZ");
+		
+		addAttr -ln "NEGZ" -nn "NEG Z" -at double  -min 0 -dv 15 $volJnt;
+		setAttr -e-keyable true ($volJnt + ".NEGZ");
+		
+		setAttr ($volJnt+".overrideEnabled") 1;
+		
+		// X //
+		$volX = `createNode joint -n("volX" + $jnt[$i])`;
+		setAttr ($volX+".radius") 0;
+		parent $volX $volJnt;
+		
+		// POS X //
+		
+		$posXA = `createNode joint -n($jnt[$i] + "posX_JA_JNT")`;
+		$posXEnd = `createNode joint -n($jnt[$i] + "posX_JEND_JNT")`;
+		parent $posXA $volX;
+		parent $posXEnd $posXA;
+		setAttr ($posXA+".radius") 0;
+		addAttr -ln "PushOffset" -nn "Push Offset" -at double -dv 15 $posXA;
+		setAttr -e-keyable true ($posXA + ".PushOffset");
+		connectAttr -f ($posXA + ".PushOffset") ($posXEnd + ".translateX");
+		
+
+		// NEG X //
+		
+		$negXA = `createNode joint -n($jnt[$i] + "negX_JA_JNT")`;
+		$negXEnd = `createNode joint -n($jnt[$i] + "negX_JEND_JNT")`;
+		parent $negXA $volX;
+		parent $negXEnd $negXA;
+		setAttr ($negXA+".radius") 0;
+		addAttr -ln "PushOffset" -nn "Push Offset" -at double -dv -15 $negXA;
+		setAttr -e-keyable true ($negXA + ".PushOffset");
+		connectAttr -f ($negXA + ".PushOffset") ($negXEnd + ".translateX");
+		
+		
+		//////////     CONNECTION          //////////
+		
+		$degXMdl = `createNode multDoubleLinear -n($jnt[$i] + "DegreePosX_MDL")`;
+		$multXMdl = `createNode multDoubleLinear -n($jnt[$i] + "MultPosX_MDL")`;
+		$invXMdl = `createNode multDoubleLinear -n($jnt[$i] + "InversePosX_MDL")`;
+		$tranXAdl = `createNode addDoubleLinear -n($jnt[$i] + "TranslatePosX_ADL")`;
+		$conX = `createNode condition -n($jnt[$i] + "PosX_CON")`;
+		
+		setAttr ($invXMdl + ".input2") -1;
+		setAttr ($degXMdl + ".input2") 0.001;
+		setAttr ($conX + ".operation") 4;
+		setAttr ($tranXAdl + ".input2") 0.5;
+		
+		connectAttr -f ($volJnt + ".POSX") ($degXMdl + ".input1");
+		connectAttr -f ($jnt[$i] + ".rotateZ") ($multXMdl + ".input1");
+		connectAttr -f ($degXMdl + ".output") ($multXMdl + ".input2");
+		connectAttr -f ($multXMdl + ".output") ($invXMdl + ".input1");
+		connectAttr -f ($invXMdl + ".output") ($conX + ".colorIfTrueR");
+		connectAttr -f ($multXMdl + ".output") ($conX + ".colorIfFalseR");
+		connectAttr -f ($multXMdl + ".output") ($conX + ".firstTerm");
+		connectAttr -f ($conX + ".outColorR") ($tranXAdl + ".input1");
+		
+		connectAttr -f ($tranXAdl + ".output") ($posXA + ".scaleX");
+		connectAttr -f ($tranXAdl + ".output") ($negXA + ".scaleX");
+		
+		
+		// Y //
+		$volY = `createNode joint -n("volY" + $jnt[$i])`;
+		setAttr ($volY+".radius") 0;
+		parent $volY $volJnt;
+		
+		// POS Y //
+		
+		$posYA = `createNode joint -n($jnt[$i] + "posY_JA_JNT")`;
+		$posYEnd = `createNode joint -n($jnt[$i] + "posY_JEND_JNT")`;
+		parent $posYA $volY;
+		parent $posYEnd $posYA;
+		setAttr ($posYA+".radius") 0;
+		addAttr -ln "PushOffset" -nn "Push Offset" -at double -dv 15 $posYA;
+		setAttr -e-keyable true ($posYA + ".PushOffset");
+		connectAttr -f ($posYA + ".PushOffset") ($posYEnd + ".translateY");
+		
+
+		// NEG Y //
+		
+		$negYA = `createNode joint -n($jnt[$i] + "negY_JA_JNT")`;
+		$negYEnd = `createNode joint -n($jnt[$i] + "negY_JEND_JNT")`;
+		parent $negYA $volY;
+		parent $negYEnd $negYA;
+		setAttr ($negYA+".radius") 0;
+		addAttr -ln "PushOffset" -nn "Push Offset" -at double -dv -15 $negYA;
+		setAttr -e-keyable true ($negYA + ".PushOffset");
+		connectAttr -f ($negYA + ".PushOffset") ($negYEnd + ".translateY");
+		
+		
+		//////////     CONNECTION          //////////
+		
+		$degYMdl = `createNode multDoubleLinear -n($jnt[$i] + "DegreePosY_MDL")`;
+		$multYMdl = `createNode multDoubleLinear -n($jnt[$i] + "MultPosY_MDL")`;
+		$invYMdl = `createNode multDoubleLinear -n($jnt[$i] + "InversePosY_MDL")`;
+		$tranYAdl = `createNode addDoubleLinear -n($jnt[$i] + "TranslatePosY_ADL")`;
+		$conY = `createNode condition -n($jnt[$i] + "PosY_CON")`;
+		
+		setAttr ($invYMdl + ".input2") -1;
+		setAttr ($degYMdl + ".input2") 0.001;
+		setAttr ($conY + ".operation") 4;
+		setAttr ($tranYAdl + ".input2") 0.5;
+		
+		connectAttr -f ($volJnt + ".POSY") ($degYMdl + ".input1");
+		connectAttr -f ($jnt[$i] + ".rotateY") ($multYMdl + ".input1");
+		connectAttr -f ($degYMdl + ".output") ($multYMdl + ".input2");
+		connectAttr -f ($multYMdl + ".output") ($invYMdl + ".input1");
+		connectAttr -f ($invYMdl + ".output") ($conY + ".colorIfTrueR");
+		connectAttr -f ($multYMdl + ".output") ($conY + ".colorIfFalseR");
+		connectAttr -f ($multYMdl + ".output") ($conY + ".firstTerm");
+		connectAttr -f ($conY + ".outColorR") ($tranYAdl + ".input1");
+		
+		connectAttr -f ($tranYAdl + ".output") ($posYA + ".scaleY");
+		connectAttr -f ($tranYAdl + ".output") ($negYA + ".scaleY");
+		
+		
+		// Z //
+		$volZ = `createNode joint -n("volZ" + $jnt[$i])`;
+		setAttr ($volZ+".radius") 0;
+		parent $volZ $volJnt;
+		
+		// POS Z //
+		
+		$posZA = `createNode joint -n($jnt[$i] + "posZ_JA_JNT")`;
+		$posZEnd = `createNode joint -n($jnt[$i] + "posZ_JEND_JNT")`;
+		parent $posZA $volZ;
+		parent $posZEnd $posZA;
+		setAttr ($posZA+".radius") 0;
+		addAttr -ln "PushOffset" -nn "Push Offset" -at double -dv 15 $posZA;
+		setAttr -e-keyable true ($posZA + ".PushOffset");
+		connectAttr -f ($posZA + ".PushOffset") ($posZEnd + ".translateZ");
+		
+
+		// NEG Z //
+		
+		$negZA = `createNode joint -n($jnt[$i] + "negZ_JA_JNT")`;
+		$negZEnd = `createNode joint -n($jnt[$i] + "negZ_JEND_JNT")`;
+		parent $negZA $volZ;
+		parent $negZEnd $negZA;
+		setAttr ($negZA+".radius") 0;
+		addAttr -ln "PushOffset" -nn "Push Offset" -at double -dv -15 $negZA;
+		setAttr -e-keyable true ($negZA + ".PushOffset");
+		connectAttr -f ($negZA + ".PushOffset") ($negZEnd + ".translateZ");
+		
+		
+		//////////     CONNECTION          //////////
+		
+		$degZMdl = `createNode multDoubleLinear -n($jnt[$i] + "DegreePosZ_MDL")`;
+		$multZMdl = `createNode multDoubleLinear -n($jnt[$i] + "MultPosZ_MDL")`;
+		$invZMdl = `createNode multDoubleLinear -n($jnt[$i] + "InversePosZ_MDL")`;
+		$tranZAdl = `createNode addDoubleLinear -n($jnt[$i] + "TranslatePosZ_ADL")`;
+		$conZ = `createNode condition -n($jnt[$i] + "PosZ_CON")`;
+		
+		setAttr ($invZMdl + ".input2") -1;
+		setAttr ($degZMdl + ".input2") 0.001;
+		setAttr ($conZ + ".operation") 4;
+		setAttr ($tranZAdl + ".input2") 0.5;
+		
+		connectAttr -f ($volJnt + ".POSZ") ($degZMdl + ".input1");
+		connectAttr -f ($jnt[$i] + ".rotateX") ($multZMdl + ".input1");
+		connectAttr -f ($degZMdl + ".output") ($multZMdl + ".input2");
+		connectAttr -f ($multZMdl + ".output") ($invZMdl + ".input1");
+		connectAttr -f ($invZMdl + ".output") ($conZ + ".colorIfTrueR");
+		connectAttr -f ($multZMdl + ".output") ($conZ + ".colorIfFalseR");
+		connectAttr -f ($multZMdl + ".output") ($conZ + ".firstTerm");
+		connectAttr -f ($conZ + ".outColorR") ($tranZAdl + ".input1");
+		
+		connectAttr -f ($tranZAdl + ".output") ($posZA + ".scaleZ");
+		connectAttr -f ($tranZAdl + ".output") ($negZA + ".scaleZ");
+		
+		
+		////  GROUPING  ////
+		$volGrp = `group -em -n("VOL" + $jnt[$i] + "_GRP")`;
+		parent $volJnt $volGrp;
+		$offGrp = `group -em -n("VOL" + $jnt[$i] + "Offset_GRP")`;
+		parent $volGrp $offGrp;
+		parentConstraint $jnt[$i] $offGrp;
+	}
+	return "arg_doVolJnt";
+}

@@ -1,0 +1,26 @@
+global proc arg_rigLoc()
+{
+	if (`objExists global_CTRL`)
+	{
+		spaceLocator -n "rig_LOC";
+		addAttr -ln "RigScale" -nn "Rig  Scale" -at double  -dv 1 rig_LOC;
+		setAttr -e-keyable true rig_LOC.RigScale;
+		connectAttr -f rig_LOC.RigScale rig_LOC.scaleX;
+		connectAttr -f rig_LOC.RigScale rig_LOC.scaleY;
+		connectAttr -f rig_LOC.RigScale rig_LOC.scaleZ;
+		setAttr -lock true -keyable false -channelBox false "rig_LOC.tx";
+		setAttr -lock true -keyable false -channelBox false "rig_LOC.ty";
+		setAttr -lock true -keyable false -channelBox false "rig_LOC.tz";
+		setAttr -lock true -keyable false -channelBox false "rig_LOC.rx";
+		setAttr -lock true -keyable false -channelBox false "rig_LOC.ry";
+		setAttr -lock true -keyable false -channelBox false "rig_LOC.rz";
+		setAttr -lock true -keyable false -channelBox false "rig_LOC.sx";
+		setAttr -lock true -keyable false -channelBox false "rig_LOC.sy";
+		setAttr -lock true -keyable false -channelBox false "rig_LOC.sz";
+		setAttr -lock true -keyable false -channelBox false "rig_LOC.v";
+	}
+	else
+	{
+		warning("Bhag Sala");
+	}
+}arg_rigLoc;

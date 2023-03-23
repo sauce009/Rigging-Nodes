@@ -1,0 +1,19 @@
+global proc string arg_createJntChain() {
+	string $naam = `textField -q -tx naam`;
+    string $sel[] = `ls -sl`;
+    string $jnt[];
+    string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+    for ($i=0; $i<size($sel); $i++) {
+        $jnt[$i] = `createNode joint -n ($naam + $lib[$i] + "_J" + $lib[$i] + "_JNT")`;
+        $con = `parentConstraint $sel[$i] $jnt[$i]`;
+        delete $con;
+    }
+    
+    for ($i=0; $i<(size($jnt)-1); $i++) {
+        parent $jnt[$i+1] $jnt[$i];
+    }
+    /*
+    joint -e  -oj yzx -secondaryAxisOrient xup -ch -zso;
+    */
+    return "arg_createJntChain";
+}

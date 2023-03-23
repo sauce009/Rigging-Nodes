@@ -1,0 +1,33 @@
+global proc string arg_doInterpolation()
+{
+      string $sel[] = `ls -sl`;
+      string $conn[];
+      string $loc[];
+      for($i=0; $i<size($sel); $i++)
+      {
+            $conn = `listRelatives -p $sel[$i]`;
+            $intpartJntA = `createNode joint -n ($sel[$i]+"InterpXfA_JNT")`;
+            $conA = `parentConstraint $sel[$i] $intpartJntA`;
+            $intpartJntB = `createNode joint -n ($sel[$i]+"InterpXfB_JNT")`;
+            $conB = `parentConstraint $sel[$i] $intpartJntB`;
+            delete $conB;
+            $conC = `parentConstraint -mo $conn $intpartJntB`;
+            $loc = `spaceLocator -n ($sel[$i]+"_LOC")`;
+            $conD = `createNode cMuscleSmartConstraint`;
+            connectAttr -f ($intpartJntA+".worldMatrix[0]") ($conD+".worldMatrixA");
+            connectAttr -f ($intpartJntB+".worldMatrix[0]") ($conD+".worldMatrixB");
+            connectAttr -f ($conD+".outTranslate") ($loc[$i]+".translate");
+            connectAttr -f ($conD+".outRotate") ($loc[$i]+".rotate");
+            $intpartJntC = `createNode joint -n ($sel[$i]+"Interp_JNT")`;
+            $conE = `parentConstraint $sel[$i] $intpartJntC`;
+            delete $conE;
+            $conF = `pointConstraint -mo $sel[$i] $intpartJntC`;
+            $conG = `orientConstraint -mo $loc $intpartJntC`;
+            $intSkelGrp = `group -n ($sel[$i] + "SkelInterp_GRP") $intpartJntC`;
+            $intPartsGrp = `group -n ($sel[$i] + "PartsInterp_GRP") $intpartJntA $intpartJntB $loc`;
+            $intGrp = `group -n ($sel[$i] + "Interp_GRP") $intSkelGrp $intPartsGrp`;
+      }
+
+return "arg_doInterpolation";
+
+}

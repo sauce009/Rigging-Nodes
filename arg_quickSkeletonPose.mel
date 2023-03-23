@@ -1,0 +1,182 @@
+global proc string arg_savePose(string $pose)
+{
+    string $sel[] = sort(stringArrayCatenate((`ls -sl`),(`listRelatives -ad -typ "joint"`)));
+    float  $matrix[];
+    for($i=0; $i<size($sel); $i++)
+    {
+        if(!`attributeExists ($pose + "T") $sel[$i]`)
+        {
+            addAttr -at "double3" -ln ($pose + "T") $sel;
+                addAttr -at "double" -ln ($pose + "Tx") -p ($pose + "T") $sel;
+                addAttr -at "double" -ln ($pose + "Ty") -p ($pose + "T") $sel;
+                addAttr -at "double" -ln ($pose + "Tz") -p ($pose + "T") $sel;
+        }
+
+            float $currentT[] = `getAttr ($sel[$i]+".t")`;
+            setAttr ($sel[$i] + "." + $pose + "T") $currentT[0] $currentT[1] $currentT[2];
+
+        if(!`attributeExists ($pose + "R") $sel[$i]`)
+        {
+            addAttr -at "double3" -ln ($pose + "R") $sel;
+                addAttr -at "double" -ln ($pose + "Rx") -p ($pose + "R") $sel;
+                addAttr -at "double" -ln ($pose + "Ry") -p ($pose + "R") $sel;
+                addAttr -at "double" -ln ($pose + "Rz") -p ($pose + "R") $sel;
+        }
+        
+            float $currentR[] = `getAttr ($sel[$i]+".r")`;
+            setAttr ($sel[$i] + "." + $pose + "R") $currentR[0] $currentR[1] $currentR[2];
+
+        if(!`attributeExists ($pose + "S") $sel[$i]`)
+        {
+            addAttr -at "double3" -ln ($pose + "S") $sel;
+                addAttr -at "double" -ln ($pose + "Sx") -p ($pose + "S") $sel;
+                addAttr -at "double" -ln ($pose + "Sy") -p ($pose + "S") $sel;
+                addAttr -at "double" -ln ($pose + "Sz") -p ($pose + "S") $sel;
+        }
+
+            float $currentS[] = `getAttr ($sel[$i]+".s")`;
+            setAttr ($sel[$i] + "." + $pose + "S") $currentS[0] $currentS[1] $currentS[2];
+
+        if(!`attributeExists ($pose + "Ro") $sel[$i]`)
+        {
+            addAttr -at "double" -ln ($pose + "Ro") $sel;
+        }
+            float $currentRo = `getAttr ($sel[$i]+".ro")`;
+            setAttr ($sel[$i] + "." + $pose + "Ro") $currentRo;
+        
+        if(!`attributeExists ($pose + "Jo") $sel[$i]`)
+        {
+            addAttr -at "double3" -ln ($pose + "Jo") $sel;
+                addAttr -at "double" -ln ($pose + "Jox") -p ($pose + "Jo") $sel;
+                addAttr -at "double" -ln ($pose + "Joy") -p ($pose + "Jo") $sel;
+                addAttr -at "double" -ln ($pose + "Joz") -p ($pose + "Jo") $sel;
+        }
+            float $currentJo[] = `getAttr ($sel[$i]+".jo")`;
+            setAttr ($sel[$i] + "." + $pose + "Jo") $currentJo[0] $currentJo[1] $currentJo[2];
+
+    string $wimAttr = ($sel[$i]+"." + $pose + "Wim");
+    if(!`attributeExists ($pose + "Wim") $sel[$i]`)
+    {
+        addAttr -at "matrix" -ln ($pose + "Wim") $sel;
+    }
+    
+        float $wimValue[] = `getAttr ($sel[$i]+".wim[0]")`;
+        setAttr -type "matrix" $wimAttr $wimValue[0] $wimValue[1] $wimValue[2] $wimValue[3] 
+                                        $wimValue[4] $wimValue[5] $wimValue[6] $wimValue[7] 
+                                        $wimValue[8] $wimValue[9] $wimValue[10] $wimValue[11] 
+                                        $wimValue[12] $wimValue[13] $wimValue[14] $wimValue[15];
+
+    }
+
+    return "arg_savePose(\"\")";
+
+}
+
+
+global proc string arg_goTo(string $pose)
+{
+    string $sel[] = sort(stringArrayCatenate((`ls -sl`),(`listRelatives -ad -typ "joint"`)));
+    for($each in $sel)
+    {
+        if (`nodeType $each`=="joint")
+        {
+            if(`attributeExists ($pose + "T") $each`)
+            {
+                float $goT[] = `getAttr ($each + "." + $pose + "T")`;
+                catch(`setAttr ($each+".t") $goT[0] $goT[1] $goT[2]`);
+            }
+
+        if(`attributeExists ($pose + "R") $each`)
+            {
+                float $goR[] = `getAttr ($each + "." + $pose + "R")`;
+                catch(`setAttr ($each+".r") $goR[0] $goR[1] $goR[2]`);
+            }
+
+            if(`attributeExists ($pose + "S") $each`)
+            {
+                float $goS[] = `getAttr ($each + "." + $pose + "S")`;
+                catch(`setAttr ($each+".s") $goS[0] $goS[1] $goS[2]`);
+            }
+            
+            if(`attributeExists ($pose + "Jo") $each`)
+            {
+                float $goJo[] = `getAttr ($each + "." + $pose + "Jo")`;
+                catch(`setAttr ($each+".jo") $goJo[0] $goJo[1] $goJo[2]`);
+            }
+
+            if(`attributeExists ($pose + "Ro") $each`)
+            {
+                float $goRo = `getAttr ($each + "." + $pose + "Ro")`;
+                catch(`setAttr ($each+".ro") $goRo`);
+            }
+        }
+    }
+    return "arg_goTo(\"\")";
+}
+
+
+global proc arg_delPose(string $pose)
+{
+    string $sel[] = sort(stringArrayCatenate((`ls -sl`),(`listRelatives -ad -typ "joint"`)));
+    for ($sj in $sel)
+    {
+        for($channel in {$pose + "T", $pose + "R", $pose + "S", $pose + "Jo", $pose + "Ro", $pose + "Wim"})
+        {
+            if(`attributeExists ($channel) $sj`)
+            {
+                deleteAttr -at ($channel) $sj;
+                if(`attributeExists ($channel+"x") $sj`) deleteAttr -at ($channel+"x") $sj;
+                if(`attributeExists ($channel+"y") $sj`) deleteAttr -at ($channel+"y") $sj;
+                if(`attributeExists ($channel+"z") $sj`) deleteAttr -at ($channel+"z") $sj;
+            }
+        }
+    }
+}
+
+
+global proc string arg_rotationToJointOrient()
+{
+	python "import maya.api.OpenMaya as arg";
+	python "import math";
+	
+	python "jntEl = cmds.ls( selection=True )";
+	python "jntSh = cmds.listRelatives(jntEl, p=True)[0]";
+	
+	python "jntEl_ws_mat = arg.MMatrix(cmds.xform(jntEl, q=True, ws=True, m=True))";
+	python "jntSh_ws_mat = arg.MMatrix(cmds.xform(jntSh, q=True, ws=True, m=True))";
+	
+	python "jntEl_loc_mat = jntEl_ws_mat * jntSh_ws_mat.inverse()";
+	
+	python "jntEl_loc_xfo_mat = arg.MTransformationMatrix(jntEl_loc_mat)";
+	
+	python "rotation = [math.degrees(x) for x in jntEl_loc_xfo_mat.rotation().asVector()]";
+	
+	python "cmds.setAttr('joint2.r', 0,0,0)";
+	python "cmds.setAttr('joint2.jo', rotation[0],rotation[1],rotation[2])";
+
+    return "arg_rotationToJointOrient";
+}
+
+
+global proc string arg_jointOrientToRotation()
+{
+	python "import maya.api.OpenMaya as arg";
+	python "import math";
+	
+	python "jntEl = cmds.ls( selection=True )";
+	python "jntSh = cmds.listRelatives(jntEl, p=True)[0]";
+	
+	python "jntEl_ws_mat = arg.MMatrix(cmds.xform(jntEl, q=True, ws=True, m=True))";
+	python "jntSh_ws_mat = arg.MMatrix(cmds.xform(jntSh, q=True, ws=True, m=True))";
+	
+	python "jntEl_loc_mat = jntEl_ws_mat * jntSh_ws_mat.inverse()";
+	
+	python "jntEl_loc_xfo_mat = arg.MTransformationMatrix(jntEl_loc_mat)";
+	
+	python "rotation = [math.degrees(x) for x in jntEl_loc_xfo_mat.rotation().asVector()]";
+	
+	python "cmds.setAttr('joint2.jo', 0,0,0)";
+	python "cmds.setAttr('joint2.r', rotation[0],rotation[1],rotation[2])";
+
+    return "arg_jointOrientToRotation";
+}
