@@ -90,7 +90,7 @@ global proc string arg_doIkFkArm()
 		parentConstraint -mo ($side[$i] + "_shoulder_JA_Con_GRP") ($side[$i] + "_elbow_JA_Offset_GRP");
 		parentConstraint -mo ($side[$i] + "_elbow_JA_Con_GRP") ($side[$i] + "_hand_JA_Offset_GRP");
 		
-		string $rev = `createNode reverse -n($side[$i] + "_arm_GRP_REV")`;
+		string $rev = `createNode reverse -n($side[$i] + "_arm_REV")`;
 		connectAttr -f ($rev + ".outputX") ($ik[0] + ".ikBlend");
 	}
 	
