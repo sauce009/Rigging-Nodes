@@ -68,6 +68,10 @@ global proc string arg_doUpperTwist(string $sj, string $ee)
 	setAttr ($md[3]+".input2Y") (0.25);
 	setAttr ($md[4]+".input2Y") (0);
 	
+	parentConstraint -mo ($sj + "twist" + $lib[0]+"_LOC") ($sj + "twist" + $lib[4]+"_LOC") ($sj + "twist"+$lib[2]+"Offset_GRP");
+	parentConstraint -mo ($sj + "twist" + $lib[0]+"_LOC") ($sj + "twist" + $lib[2]+"_LOC") ($sj + "twist"+$lib[1]+"Offset_GRP");
+	parentConstraint -mo ($sj + "twist" + $lib[2]+"_LOC") ($sj + "twist" + $lib[4]+"_LOC") ($sj + "twist"+$lib[3]+"Offset_GRP");
+	
 	string $twstGrp = `group -em -n ($sj + "Twist_GRP")`;
 	parent $cv $twstJnt $tanGrp $grp $twstGrp;
 	
@@ -75,7 +79,7 @@ global proc string arg_doUpperTwist(string $sj, string $ee)
 }
 
 
-global proc string arg_doLowerTwist(string $sj, string $ee)
+global proc string arg_doLowerTwist(string $sj, string $ee, float $kneeSplit)
 {
 	int $no = 5;
 	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
@@ -158,6 +162,21 @@ global proc string arg_doLowerTwist(string $sj, string $ee)
 	string $twstGrp = `group -em -n ($sj + "Twist_GRP")`;
 	parent $cv $jntGrp $tanGrp $grp $twstGrp;
 	
+	parentConstraint -mo ($sj + "twist" + $lib[0]+"_LOC") ($sj + "twist" + $lib[4]+"_LOC") ($sj + "twist"+$lib[2]+"Offset_GRP");
+	parentConstraint -mo ($sj + "twist" + $lib[0]+"_LOC") ($sj + "twist" + $lib[2]+"_LOC") ($sj + "twist"+$lib[1]+"Offset_GRP");
+	parentConstraint -mo ($sj + "twist" + $lib[2]+"_LOC") ($sj + "twist" + $lib[4]+"_LOC") ($sj + "twist"+$lib[3]+"Offset_GRP");
+	
+	if($kneeSplit == 1)
+	{
+		arg_setDrivenKeyframe($ee, {"rotateX"}, {(-45)}, {(-120)}, ($sj + "twist" + $lib[4]+"_LOC"), {"translateY"}, {(0)}, {(-2.5)}, "linear");
+	}
+	else
+	{
+		print "SKIP";
+	}
+	
+	select -r pelvis_JA_JNT;
+	arg_goTo("ProjectionPose");
 	
 	return "arg_doLowerTwist";
 }
