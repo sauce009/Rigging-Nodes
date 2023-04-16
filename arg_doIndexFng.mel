@@ -100,7 +100,7 @@ global proc string arg_doIndexFng(string $lIndFng[], string $rIndFng[])
 		
 		for($i=0; $i<size($side); $i++)
 		{
-			string $fngCtrlGrp = `group -em -n($side[$i] + "_fng_GRP")`;
+			string $fngCtrlGrp = `group -em -n($side[$i] + "_fngInd_GRP")`;
 			string $IndCtrlGrp = `group -em -n($side[$i] + "_fngIndex_Ctrl_GRP")`;
 			string $IndPartsGrp = `group -em -n($side[$i] + "_fngIndex_Parts_GRP")`;
 			
