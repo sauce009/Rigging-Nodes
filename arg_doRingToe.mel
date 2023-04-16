@@ -1,0 +1,50 @@
+global proc string arg_doRingToe(string $lRingToe[], string $rRingToe[])
+{
+	
+	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	string $side[] = {"l","r"};
+	$lRingToe = `ls ("l_toeRing_J?_JNT")`;	
+	$rRingToe = `ls ("r_toeRing_J?_JNT")`;
+	
+	for($i=0; $i<size($lRingToe); $i++)
+	{
+		select -r $lRingToe[$i];
+		arg_circle;
+		parentConstraint -mo ("l_toeRing_J" + $lib[$i] + "_Con_GRP") ($lRingToe[$i]);
+	}
+
+	for($i=0; $i<size($rRingToe); $i++)
+	{
+		select -r $rRingToe[$i];
+		arg_circle;
+		parentConstraint -mo ("r_toeRing_J" + $lib[$i] + "_Con_GRP") ($rRingToe[$i]);
+	}	
+	
+	string $lRingConGrp[] = `ls ("l_toeRing_J?_Con_GRP")`;
+	string $lRingOffGrp[] = `ls ("l_toeRing_J?_Offset_GRP")`;
+	string $rRingConGrp[] = `ls ("r_toeRing_J?_Con_GRP")`;
+	string $rRingOffGrp[] = `ls ("r_toeRing_J?_Offset_GRP")`;
+	for ($i=0; $i<(size($lRingConGrp)-1); $i++)
+    {
+        parentConstraint -mo $lRingConGrp[$i] $lRingOffGrp[$i+1];
+        parentConstraint -mo $rRingConGrp[$i] $rRingOffGrp[$i+1];
+    }
+    
+	for ($i=0; $i<(size($rRingConGrp)-1); $i++)
+    {
+        parentConstraint -mo $rRingConGrp[$i] $rRingOffGrp[$i+1];
+        parentConstraint -mo $rRingConGrp[$i] $rRingOffGrp[$i+1];
+    }
+		
+	for($i=0; $i<size($side); $i++)
+	{
+		string $toeCtrlGrp = `group -em -n($side[$i] + "_toeRing_GRP")`;
+		string $RingCtrlGrp = `group -em -n($side[$i] + "_toeRing_Ctrl_GRP")`;
+		string $RingPartsGrp = `group -em -n($side[$i] + "_toeRing_Parts_GRP")`;
+		
+		parent ($side[$i] + "_toeRing_J?_Offset_GRP") ($RingCtrlGrp);
+		parent ($RingCtrlGrp) ($RingPartsGrp) ($toeCtrlGrp);
+	}
+		
+	    return "arg_doRingToe";
+}

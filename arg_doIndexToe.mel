@@ -1,0 +1,50 @@
+global proc string arg_doIndexToe(string $lIndexToe[], string $rIndexToe[])
+{
+	
+	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	string $side[] = {"l","r"};
+	$lIndexToe = `ls ("l_toeIndex_J?_JNT")`;	
+	$rIndexToe = `ls ("r_toeIndex_J?_JNT")`;
+	
+	for($i=0; $i<size($lIndexToe); $i++)
+	{
+		select -r $lIndexToe[$i];
+		arg_circle;
+		parentConstraint -mo ("l_toeIndex_J" + $lib[$i] + "_Con_GRP") ($lIndexToe[$i]);
+	}
+
+	for($i=0; $i<size($rIndexToe); $i++)
+	{
+		select -r $rIndexToe[$i];
+		arg_circle;
+		parentConstraint -mo ("r_toeIndex_J" + $lib[$i] + "_Con_GRP") ($rIndexToe[$i]);
+	}	
+	
+	string $lIndexConGrp[] = `ls ("l_toeIndex_J?_Con_GRP")`;
+	string $lIndexOffGrp[] = `ls ("l_toeIndex_J?_Offset_GRP")`;
+	string $rIndexConGrp[] = `ls ("r_toeIndex_J?_Con_GRP")`;
+	string $rIndexOffGrp[] = `ls ("r_toeIndex_J?_Offset_GRP")`;
+	for ($i=0; $i<(size($lIndexConGrp)-1); $i++)
+    {
+        parentConstraint -mo $lIndexConGrp[$i] $lIndexOffGrp[$i+1];
+        parentConstraint -mo $rIndexConGrp[$i] $rIndexOffGrp[$i+1];
+    }
+    
+	for ($i=0; $i<(size($rIndexConGrp)-1); $i++)
+    {
+        parentConstraint -mo $rIndexConGrp[$i] $rIndexOffGrp[$i+1];
+        parentConstraint -mo $rIndexConGrp[$i] $rIndexOffGrp[$i+1];
+    }
+		
+	for($i=0; $i<size($side); $i++)
+	{
+		string $toeCtrlGrp = `group -em -n($side[$i] + "_toeIndex_GRP")`;
+		string $IndexCtrlGrp = `group -em -n($side[$i] + "_toeIndex_Ctrl_GRP")`;
+		string $IndexPartsGrp = `group -em -n($side[$i] + "_toeIndex_Parts_GRP")`;
+		
+		parent ($side[$i] + "_toeIndex_J?_Offset_GRP") ($IndexCtrlGrp);
+		parent ($IndexCtrlGrp) ($IndexPartsGrp) ($toeCtrlGrp);
+	}
+		
+	    return "arg_doIndexToe";
+}

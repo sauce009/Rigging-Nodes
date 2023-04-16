@@ -1,0 +1,114 @@
+global proc string arg_doRingFng(string $lRingFng[], string $rRingFng[])
+{
+	
+	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	$lRingFng = `ls ("l_fngRing_J?_JNT")`;	
+	$rRingFng = `ls ("r_fngRing_J?_JNT")`;
+	
+	for($i=0; $i<size($lRingFng); $i++)
+	{
+		select -r $lRingFng[$i];
+		arg_circle;
+		parentConstraint -mo ("l_fngRing_J" + $lib[$i] + "_Con_GRP") ($lRingFng[$i]);
+	}
+
+	for($i=0; $i<size($rRingFng); $i++)
+	{
+		select -r $rRingFng[$i];
+		arg_circle;
+		parentConstraint -mo ("r_fngRing_J" + $lib[$i] + "_Con_GRP") ($rRingFng[$i]);
+	}	
+	
+	string $lRingConGrp[] = `ls ("l_fngRing_J?_Con_GRP")`;
+	string $lRingOffGrp[] = `ls ("l_fngRing_J?_Offset_GRP")`;
+	string $rRingConGrp[] = `ls ("r_fngRing_J?_Con_GRP")`;
+	string $rRingOffGrp[] = `ls ("r_fngRing_J?_Offset_GRP")`;
+	for ($i=0; $i<(size($lRingConGrp)-1); $i++)
+    {
+        parentConstraint -mo $lRingConGrp[$i] $lRingOffGrp[$i+1];
+        parentConstraint -mo $rRingConGrp[$i] $rRingOffGrp[$i+1];
+    }
+    
+	for ($i=0; $i<(size($rRingConGrp)-1); $i++)
+    {
+        parentConstraint -mo $rRingConGrp[$i] $rRingOffGrp[$i+1];
+        parentConstraint -mo $rRingConGrp[$i] $rRingOffGrp[$i+1];
+    }
+    
+    ////////// << IK >> //////////
+	string $side[] = {"l","r"};
+	string $ik[];
+	string $rev[];
+	string $sj[] = {"l_fngRing_JA_JNT","r_fngRing_JA_JNT"};
+	string $ee[] = {"l_fngRing_JEnd_JNT","r_fngRing_JEnd_JNT"};
+	for($i=0; $i<size($side); $i++)
+		{
+			$ik = `ikHandle -n ($side[$i] + "_ringFng_IK") -sj $sj[$i] -ee $ee[$i]`;
+			$rev[$i] = `createNode reverse -n($side[$i] + "_ringFng_REV")`;
+		}
+		
+		
+		
+	for($i=0; $i<size($side); $i++)
+		{
+			string $ringConA = "_fngRing_J";
+			string $ringConB = "_JNT_parentConstraint1";
+			string $ringConAttrA = ("_fngRing_J");
+			string $ringConAttrB = "_Con_GRPW0";
+			string $ikHandle = "_ringFng_IK";
+			for($i=0; $i<size($lRingFng); $i++)
+			{
+				arg_setDrivenKeyframe(($side[0] + $ikHandle), {"ikBlend"}, {(0)}, {(1)}, ($side[0] + $ringConA + $lib[$i] + $ringConB), {($side[0] + $ringConAttrA + $lib[$i] + $ringConAttrB)}, {(1)}, {(0)}, "linear");
+				arg_setDrivenKeyframe(($side[1] + $ikHandle), {"ikBlend"}, {(0)}, {(1)}, ($side[1] + $ringConA + $lib[$i] + $ringConB), {($side[1] + $ringConAttrA + $lib[$i] + $ringConAttrB)}, {(1)}, {(0)}, "linear");
+			}
+			connectAttr -f ($rev[0] + ".outputX") (($side[0] + $ikHandle) + ".ikBlend");
+			connectAttr -f ($rev[1] + ".outputX") (($side[1] + $ikHandle) + ".ikBlend");			
+		}
+	    
+	    for($i=0; $i<size($side); $i++)
+	    {
+	    	select -r ($side[$i] + "_ringFng_IK");
+			arg_circle;
+			
+			select -r ($side[$i] + "_ringFng_IK_Offset_GRP");
+			searchReplaceNames ("ringFng_IK") ("ringFng_poleVec") "hierarchy";
+	    	string $pole_vecOff[] = `ls ($side[$i] + "_ringFng_poleVec_Offset_GRP")`;
+			string $pole_vecCon[] = `ls ($side[$i] + "_ringFng_poleVec_Con_GRP")`;
+			
+			float $fngRingA_pos[] = `xform -q -ws -t ($side[$i] + "_fngRing_JA_JNT")`;
+			float $fngRingB_pos[] = `xform -q -ws -t ($side[$i] + "_fngRing_JB_JNT")`;
+			float $fngRingEnd_pos[] = `xform -q -ws -t ($side[$i] + "_fngRing_JEnd_JNT")`;
+			float $ringexA_to_ringexEnd[] = {($fngRingEnd_pos[0]) - ($fngRingA_pos[0]),($fngRingEnd_pos[1]) - ($fngRingA_pos[1]),($fngRingEnd_pos[2]) - ($fngRingA_pos[2])};
+			float $ringexA_to_ringexEnd_scaled[] = {($ringexA_to_ringexEnd[0] / 2),($ringexA_to_ringexEnd[1] / 2),($ringexA_to_ringexEnd[2] / 2)};
+			float $ring_point[] = {($fngRingA_pos[0] + $ringexA_to_ringexEnd_scaled[0]),($fngRingA_pos[1] + $ringexA_to_ringexEnd_scaled[1]),($fngRingA_pos[2] + $ringexA_to_ringexEnd_scaled[2])};
+			float $ring_point_to_ringexB_vec[] = {($fngRingB_pos[0] - $ring_point[0]),($fngRingB_pos[1] - $ring_point[1]),($fngRingB_pos[2] - $ring_point[2])};
+			float $ring_point_to_RingB_vec_scaled[] = {($ring_point_to_ringexB_vec[0] * 5),($ring_point_to_ringexB_vec[1] * 5),($ring_point_to_ringexB_vec[2] * 5)};
+			float $ring_point_to_ringexB_point[] = {($ring_point[0] + $ring_point_to_RingB_vec_scaled[0]),($ring_point[1] + $ring_point_to_RingB_vec_scaled[1]),($ring_point[2] + $ring_point_to_RingB_vec_scaled[2])};
+			
+			setAttr -type float3 ($pole_vecOff[$i] + ".translate") $ring_point_to_ringexB_point[0] $ring_point_to_ringexB_point[1] $ring_point_to_ringexB_point[2];
+			poleVectorConstraint  ($pole_vecCon) ($side[$i] + "_ringFng_IK");
+		}
+		
+		for($i=0; $i<size($side); $i++)
+		{
+	    	select -r ($side[$i] + "_ringFng_IK");
+			arg_circle;
+			
+			parentConstraint -mo ($side[$i] + "_ringFng_IK_Con_GRP") ($side[$i] + "_ringFng_poleVec_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_ringFng_IK_Con_GRP") ($side[$i] + "_ringFng_IK");
+		}
+		
+		for($i=0; $i<size($side); $i++)
+		{
+			string $fngCtrlGrp = `group -em -n($side[$i] + "_fngRing_GRP")`;
+			string $RingCtrlGrp = `group -em -n($side[$i] + "_fngRing_Ctrl_GRP")`;
+			string $RingPartsGrp = `group -em -n($side[$i] + "_fngRing_Parts_GRP")`;
+			
+			parent ($side[$i] + "_fngRing_J?_Offset_GRP") ($RingCtrlGrp);
+			parent ($side[$i] + "_ringFng_IK_Offset_GRP") ($side[$i] + "_ringFng_poleVec_Offset_GRP") ($RingCtrlGrp);
+			parent ($side[$i] + "_ringFng_IK") ($RingPartsGrp);
+			parent ($RingCtrlGrp) ($RingPartsGrp) ($fngCtrlGrp);
+		}
+		
+	    return "arg_doRingFng";
+}

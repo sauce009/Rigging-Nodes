@@ -1,0 +1,114 @@
+global proc string arg_doMidFng(string $lMidFng[], string $rMidFng[])
+{
+	
+	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	$lMidFng = `ls ("l_fngMid_J?_JNT")`;	
+	$rMidFng = `ls ("r_fngMid_J?_JNT")`;
+	
+	for($i=0; $i<size($lMidFng); $i++)
+	{
+		select -r $lMidFng[$i];
+		arg_circle;
+		parentConstraint -mo ("l_fngMid_J" + $lib[$i] + "_Con_GRP") ($lMidFng[$i]);
+	}
+
+	for($i=0; $i<size($rMidFng); $i++)
+	{
+		select -r $rMidFng[$i];
+		arg_circle;
+		parentConstraint -mo ("r_fngMid_J" + $lib[$i] + "_Con_GRP") ($rMidFng[$i]);
+	}	
+	
+	string $lMidConGrp[] = `ls ("l_fngMid_J?_Con_GRP")`;
+	string $lMidOffGrp[] = `ls ("l_fngMid_J?_Offset_GRP")`;
+	string $rMidConGrp[] = `ls ("r_fngMid_J?_Con_GRP")`;
+	string $rMidOffGrp[] = `ls ("r_fngMid_J?_Offset_GRP")`;
+	for ($i=0; $i<(size($lMidConGrp)-1); $i++)
+    {
+        parentConstraint -mo $lMidConGrp[$i] $lMidOffGrp[$i+1];
+        parentConstraint -mo $rMidConGrp[$i] $rMidOffGrp[$i+1];
+    }
+    
+	for ($i=0; $i<(size($rMidConGrp)-1); $i++)
+    {
+        parentConstraint -mo $rMidConGrp[$i] $rMidOffGrp[$i+1];
+        parentConstraint -mo $rMidConGrp[$i] $rMidOffGrp[$i+1];
+    }
+    
+    ////////// << IK >> //////////
+	string $side[] = {"l","r"};
+	string $ik[];
+	string $rev[];
+	string $sj[] = {"l_fngMid_JA_JNT","r_fngMid_JA_JNT"};
+	string $ee[] = {"l_fngMid_JEnd_JNT","r_fngMid_JEnd_JNT"};
+	for($i=0; $i<size($side); $i++)
+		{
+			$ik = `ikHandle -n ($side[$i] + "_midFng_IK") -sj $sj[$i] -ee $ee[$i]`;
+			$rev[$i] = `createNode reverse -n($side[$i] + "_midFng_REV")`;
+		}
+		
+		
+		
+	for($i=0; $i<size($side); $i++)
+		{
+			string $midConA = "_fngMid_J";
+			string $midConB = "_JNT_parentConstraint1";
+			string $midConAttrA = ("_fngMid_J");
+			string $midConAttrB = "_Con_GRPW0";
+			string $ikHandle = "_midFng_IK";
+			for($i=0; $i<size($lMidFng); $i++)
+			{
+				arg_setDrivenKeyframe(($side[0] + $ikHandle), {"ikBlend"}, {(0)}, {(1)}, ($side[0] + $midConA + $lib[$i] + $midConB), {($side[0] + $midConAttrA + $lib[$i] + $midConAttrB)}, {(1)}, {(0)}, "linear");
+				arg_setDrivenKeyframe(($side[1] + $ikHandle), {"ikBlend"}, {(0)}, {(1)}, ($side[1] + $midConA + $lib[$i] + $midConB), {($side[1] + $midConAttrA + $lib[$i] + $midConAttrB)}, {(1)}, {(0)}, "linear");
+			}
+			connectAttr -f ($rev[0] + ".outputX") (($side[0] + $ikHandle) + ".ikBlend");
+			connectAttr -f ($rev[1] + ".outputX") (($side[1] + $ikHandle) + ".ikBlend");			
+		}
+	    
+	    for($i=0; $i<size($side); $i++)
+	    {
+	    	select -r ($side[$i] + "_midFng_IK");
+			arg_circle;
+			
+			select -r ($side[$i] + "_midFng_IK_Offset_GRP");
+			searchReplaceNames ("midFng_IK") ("midFng_poleVec") "hierarchy";
+	    	string $pole_vecOff[] = `ls ($side[$i] + "_midFng_poleVec_Offset_GRP")`;
+			string $pole_vecCon[] = `ls ($side[$i] + "_midFng_poleVec_Con_GRP")`;
+			
+			float $fngMidA_pos[] = `xform -q -ws -t ($side[$i] + "_fngMid_JA_JNT")`;
+			float $fngMidB_pos[] = `xform -q -ws -t ($side[$i] + "_fngMid_JB_JNT")`;
+			float $fngMidEnd_pos[] = `xform -q -ws -t ($side[$i] + "_fngMid_JEnd_JNT")`;
+			float $midexA_to_midexEnd[] = {($fngMidEnd_pos[0]) - ($fngMidA_pos[0]),($fngMidEnd_pos[1]) - ($fngMidA_pos[1]),($fngMidEnd_pos[2]) - ($fngMidA_pos[2])};
+			float $midexA_to_midexEnd_scaled[] = {($midexA_to_midexEnd[0] / 2),($midexA_to_midexEnd[1] / 2),($midexA_to_midexEnd[2] / 2)};
+			float $mid_point[] = {($fngMidA_pos[0] + $midexA_to_midexEnd_scaled[0]),($fngMidA_pos[1] + $midexA_to_midexEnd_scaled[1]),($fngMidA_pos[2] + $midexA_to_midexEnd_scaled[2])};
+			float $mid_point_to_midexB_vec[] = {($fngMidB_pos[0] - $mid_point[0]),($fngMidB_pos[1] - $mid_point[1]),($fngMidB_pos[2] - $mid_point[2])};
+			float $mid_point_to_MidB_vec_scaled[] = {($mid_point_to_midexB_vec[0] * 5),($mid_point_to_midexB_vec[1] * 5),($mid_point_to_midexB_vec[2] * 5)};
+			float $mid_point_to_midexB_point[] = {($mid_point[0] + $mid_point_to_MidB_vec_scaled[0]),($mid_point[1] + $mid_point_to_MidB_vec_scaled[1]),($mid_point[2] + $mid_point_to_MidB_vec_scaled[2])};
+			
+			setAttr -type float3 ($pole_vecOff[$i] + ".translate") $mid_point_to_midexB_point[0] $mid_point_to_midexB_point[1] $mid_point_to_midexB_point[2];
+			poleVectorConstraint  ($pole_vecCon) ($side[$i] + "_midFng_IK");
+		}
+		
+		for($i=0; $i<size($side); $i++)
+		{
+	    	select -r ($side[$i] + "_midFng_IK");
+			arg_circle;
+			
+			parentConstraint -mo ($side[$i] + "_midFng_IK_Con_GRP") ($side[$i] + "_midFng_poleVec_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_midFng_IK_Con_GRP") ($side[$i] + "_midFng_IK");
+		}
+		
+		for($i=0; $i<size($side); $i++)
+		{
+			string $fngCtrlGrp = `group -em -n($side[$i] + "_fngMid_GRP")`;
+			string $MidCtrlGrp = `group -em -n($side[$i] + "_fngMid_Ctrl_GRP")`;
+			string $MidPartsGrp = `group -em -n($side[$i] + "_fngMid_Parts_GRP")`;
+			
+			parent ($side[$i] + "_fngMid_J?_Offset_GRP") ($MidCtrlGrp);
+			parent ($side[$i] + "_midFng_IK_Offset_GRP") ($side[$i] + "_midFng_poleVec_Offset_GRP") ($MidCtrlGrp);
+			parent ($side[$i] + "_midFng_IK") ($MidPartsGrp);
+			parent ($MidCtrlGrp) ($MidPartsGrp) ($fngCtrlGrp);
+		}
+		
+	    return "arg_doMidFng";
+}

@@ -1,0 +1,114 @@
+global proc string arg_doThumbFng(string $lThumbFng[], string $rThumbFng[])
+{
+	
+	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	$lThumbFng = `ls ("l_fngThumb_J?_JNT")`;	
+	$rThumbFng = `ls ("r_fngThumb_J?_JNT")`;
+	
+	for($i=0; $i<size($lThumbFng); $i++)
+	{
+		select -r $lThumbFng[$i];
+		arg_circle;
+		parentConstraint -mo ("l_fngThumb_J" + $lib[$i] + "_Con_GRP") ($lThumbFng[$i]);
+	}
+
+	for($i=0; $i<size($rThumbFng); $i++)
+	{
+		select -r $rThumbFng[$i];
+		arg_circle;
+		parentConstraint -mo ("r_fngThumb_J" + $lib[$i] + "_Con_GRP") ($rThumbFng[$i]);
+	}	
+	
+	string $lThumbConGrp[] = `ls ("l_fngThumb_J?_Con_GRP")`;
+	string $lThumbOffGrp[] = `ls ("l_fngThumb_J?_Offset_GRP")`;
+	string $rThumbConGrp[] = `ls ("r_fngThumb_J?_Con_GRP")`;
+	string $rThumbOffGrp[] = `ls ("r_fngThumb_J?_Offset_GRP")`;
+	for ($i=0; $i<(size($lThumbConGrp)-1); $i++)
+    {
+        parentConstraint -mo $lThumbConGrp[$i] $lThumbOffGrp[$i+1];
+        parentConstraint -mo $rThumbConGrp[$i] $rThumbOffGrp[$i+1];
+    }
+    
+	for ($i=0; $i<(size($rThumbConGrp)-1); $i++)
+    {
+        parentConstraint -mo $rThumbConGrp[$i] $rThumbOffGrp[$i+1];
+        parentConstraint -mo $rThumbConGrp[$i] $rThumbOffGrp[$i+1];
+    }
+    
+    ////////// << IK >> //////////
+	string $side[] = {"l","r"};
+	string $ik[];
+	string $rev[];
+	string $sj[] = {"l_fngThumb_JA_JNT","r_fngThumb_JA_JNT"};
+	string $ee[] = {"l_fngThumb_JEnd_JNT","r_fngThumb_JEnd_JNT"};
+	for($i=0; $i<size($side); $i++)
+		{
+			$ik = `ikHandle -n ($side[$i] + "_thumbFng_IK") -sj $sj[$i] -ee $ee[$i]`;
+			$rev[$i] = `createNode reverse -n($side[$i] + "_thumbFng_REV")`;
+		}
+		
+		
+		
+	for($i=0; $i<size($side); $i++)
+		{
+			string $thumbConA = "_fngThumb_J";
+			string $thumbConB = "_JNT_parentConstraint1";
+			string $thumbConAttrA = ("_fngThumb_J");
+			string $thumbConAttrB = "_Con_GRPW0";
+			string $ikHandle = "_thumbFng_IK";
+			for($i=0; $i<size($lThumbFng); $i++)
+			{
+				arg_setDrivenKeyframe(($side[0] + $ikHandle), {"ikBlend"}, {(0)}, {(1)}, ($side[0] + $thumbConA + $lib[$i] + $thumbConB), {($side[0] + $thumbConAttrA + $lib[$i] + $thumbConAttrB)}, {(1)}, {(0)}, "linear");
+				arg_setDrivenKeyframe(($side[1] + $ikHandle), {"ikBlend"}, {(0)}, {(1)}, ($side[1] + $thumbConA + $lib[$i] + $thumbConB), {($side[1] + $thumbConAttrA + $lib[$i] + $thumbConAttrB)}, {(1)}, {(0)}, "linear");
+			}
+			connectAttr -f ($rev[0] + ".outputX") (($side[0] + $ikHandle) + ".ikBlend");
+			connectAttr -f ($rev[1] + ".outputX") (($side[1] + $ikHandle) + ".ikBlend");			
+		}
+	    
+	    for($i=0; $i<size($side); $i++)
+	    {
+	    	select -r ($side[$i] + "_thumbFng_IK");
+			arg_circle;
+			
+			select -r ($side[$i] + "_thumbFng_IK_Offset_GRP");
+			searchReplaceNames ("thumbFng_IK") ("thumbFng_poleVec") "hierarchy";
+	    	string $pole_vecOff[] = `ls ($side[$i] + "_thumbFng_poleVec_Offset_GRP")`;
+			string $pole_vecCon[] = `ls ($side[$i] + "_thumbFng_poleVec_Con_GRP")`;
+			
+			float $fngThumbA_pos[] = `xform -q -ws -t ($side[$i] + "_fngThumb_JA_JNT")`;
+			float $fngThumbB_pos[] = `xform -q -ws -t ($side[$i] + "_fngThumb_JB_JNT")`;
+			float $fngThumbEnd_pos[] = `xform -q -ws -t ($side[$i] + "_fngThumb_JEnd_JNT")`;
+			float $thumbexA_to_thumbexEnd[] = {($fngThumbEnd_pos[0]) - ($fngThumbA_pos[0]),($fngThumbEnd_pos[1]) - ($fngThumbA_pos[1]),($fngThumbEnd_pos[2]) - ($fngThumbA_pos[2])};
+			float $thumbexA_to_thumbexEnd_scaled[] = {($thumbexA_to_thumbexEnd[0] / 2),($thumbexA_to_thumbexEnd[1] / 2),($thumbexA_to_thumbexEnd[2] / 2)};
+			float $thumb_point[] = {($fngThumbA_pos[0] + $thumbexA_to_thumbexEnd_scaled[0]),($fngThumbA_pos[1] + $thumbexA_to_thumbexEnd_scaled[1]),($fngThumbA_pos[2] + $thumbexA_to_thumbexEnd_scaled[2])};
+			float $thumb_point_to_thumbexB_vec[] = {($fngThumbB_pos[0] - $thumb_point[0]),($fngThumbB_pos[1] - $thumb_point[1]),($fngThumbB_pos[2] - $thumb_point[2])};
+			float $thumb_point_to_ThumbB_vec_scaled[] = {($thumb_point_to_thumbexB_vec[0] * 5),($thumb_point_to_thumbexB_vec[1] * 5),($thumb_point_to_thumbexB_vec[2] * 5)};
+			float $thumb_point_to_thumbexB_point[] = {($thumb_point[0] + $thumb_point_to_ThumbB_vec_scaled[0]),($thumb_point[1] + $thumb_point_to_ThumbB_vec_scaled[1]),($thumb_point[2] + $thumb_point_to_ThumbB_vec_scaled[2])};
+			
+			setAttr -type float3 ($pole_vecOff[$i] + ".translate") $thumb_point_to_thumbexB_point[0] $thumb_point_to_thumbexB_point[1] $thumb_point_to_thumbexB_point[2];
+			poleVectorConstraint  ($pole_vecCon) ($side[$i] + "_thumbFng_IK");
+		}
+		
+		for($i=0; $i<size($side); $i++)
+		{
+	    	select -r ($side[$i] + "_thumbFng_IK");
+			arg_circle;
+			
+			parentConstraint -mo ($side[$i] + "_thumbFng_IK_Con_GRP") ($side[$i] + "_thumbFng_poleVec_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_thumbFng_IK_Con_GRP") ($side[$i] + "_thumbFng_IK");
+		}
+		
+		for($i=0; $i<size($side); $i++)
+		{
+			string $fngCtrlGrp = `group -em -n($side[$i] + "_fngThumb_GRP")`;
+			string $ThumbCtrlGrp = `group -em -n($side[$i] + "_fngThumb_Ctrl_GRP")`;
+			string $ThumbPartsGrp = `group -em -n($side[$i] + "_fngThumb_Parts_GRP")`;
+			
+			parent ($side[$i] + "_fngThumb_J?_Offset_GRP") ($ThumbCtrlGrp);
+			parent ($side[$i] + "_thumbFng_IK_Offset_GRP") ($side[$i] + "_thumbFng_poleVec_Offset_GRP") ($ThumbCtrlGrp);
+			parent ($side[$i] + "_thumbFng_IK") ($ThumbPartsGrp);
+			parent ($ThumbCtrlGrp) ($ThumbPartsGrp) ($fngCtrlGrp);
+		}
+		
+	    return "arg_doThumbFng";
+}

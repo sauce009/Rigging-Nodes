@@ -1,0 +1,50 @@
+global proc string arg_doMidToe(string $lMidToe[], string $rMidToe[])
+{
+	
+	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	string $side[] = {"l","r"};
+	$lMidToe = `ls ("l_toeMid_J?_JNT")`;	
+	$rMidToe = `ls ("r_toeMid_J?_JNT")`;
+	
+	for($i=0; $i<size($lMidToe); $i++)
+	{
+		select -r $lMidToe[$i];
+		arg_circle;
+		parentConstraint -mo ("l_toeMid_J" + $lib[$i] + "_Con_GRP") ($lMidToe[$i]);
+	}
+
+	for($i=0; $i<size($rMidToe); $i++)
+	{
+		select -r $rMidToe[$i];
+		arg_circle;
+		parentConstraint -mo ("r_toeMid_J" + $lib[$i] + "_Con_GRP") ($rMidToe[$i]);
+	}	
+	
+	string $lMidConGrp[] = `ls ("l_toeMid_J?_Con_GRP")`;
+	string $lMidOffGrp[] = `ls ("l_toeMid_J?_Offset_GRP")`;
+	string $rMidConGrp[] = `ls ("r_toeMid_J?_Con_GRP")`;
+	string $rMidOffGrp[] = `ls ("r_toeMid_J?_Offset_GRP")`;
+	for ($i=0; $i<(size($lMidConGrp)-1); $i++)
+    {
+        parentConstraint -mo $lMidConGrp[$i] $lMidOffGrp[$i+1];
+        parentConstraint -mo $rMidConGrp[$i] $rMidOffGrp[$i+1];
+    }
+    
+	for ($i=0; $i<(size($rMidConGrp)-1); $i++)
+    {
+        parentConstraint -mo $rMidConGrp[$i] $rMidOffGrp[$i+1];
+        parentConstraint -mo $rMidConGrp[$i] $rMidOffGrp[$i+1];
+    }
+		
+	for($i=0; $i<size($side); $i++)
+	{
+		string $toeCtrlGrp = `group -em -n($side[$i] + "_toeMid_GRP")`;
+		string $MidCtrlGrp = `group -em -n($side[$i] + "_toeMid_Ctrl_GRP")`;
+		string $MidPartsGrp = `group -em -n($side[$i] + "_toeMid_Parts_GRP")`;
+		
+		parent ($side[$i] + "_toeMid_J?_Offset_GRP") ($MidCtrlGrp);
+		parent ($MidCtrlGrp) ($MidPartsGrp) ($toeCtrlGrp);
+	}
+		
+	    return "arg_doMidToe";
+}

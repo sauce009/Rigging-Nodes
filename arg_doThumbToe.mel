@@ -1,0 +1,50 @@
+global proc string arg_doThumbToe(string $lThumbToe[], string $rThumbToe[])
+{
+	
+	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	string $side[] = {"l","r"};
+	$lThumbToe = `ls ("l_toeThumb_J?_JNT")`;	
+	$rThumbToe = `ls ("r_toeThumb_J?_JNT")`;
+	
+	for($i=0; $i<size($lThumbToe); $i++)
+	{
+		select -r $lThumbToe[$i];
+		arg_circle;
+		parentConstraint -mo ("l_toeThumb_J" + $lib[$i] + "_Con_GRP") ($lThumbToe[$i]);
+	}
+
+	for($i=0; $i<size($rThumbToe); $i++)
+	{
+		select -r $rThumbToe[$i];
+		arg_circle;
+		parentConstraint -mo ("r_toeThumb_J" + $lib[$i] + "_Con_GRP") ($rThumbToe[$i]);
+	}	
+	
+	string $lThumbConGrp[] = `ls ("l_toeThumb_J?_Con_GRP")`;
+	string $lThumbOffGrp[] = `ls ("l_toeThumb_J?_Offset_GRP")`;
+	string $rThumbConGrp[] = `ls ("r_toeThumb_J?_Con_GRP")`;
+	string $rThumbOffGrp[] = `ls ("r_toeThumb_J?_Offset_GRP")`;
+	for ($i=0; $i<(size($lThumbConGrp)-1); $i++)
+    {
+        parentConstraint -mo $lThumbConGrp[$i] $lThumbOffGrp[$i+1];
+        parentConstraint -mo $rThumbConGrp[$i] $rThumbOffGrp[$i+1];
+    }
+    
+	for ($i=0; $i<(size($rThumbConGrp)-1); $i++)
+    {
+        parentConstraint -mo $rThumbConGrp[$i] $rThumbOffGrp[$i+1];
+        parentConstraint -mo $rThumbConGrp[$i] $rThumbOffGrp[$i+1];
+    }
+		
+	for($i=0; $i<size($side); $i++)
+	{
+		string $toeCtrlGrp = `group -em -n($side[$i] + "_toeThumb_GRP")`;
+		string $ThumbCtrlGrp = `group -em -n($side[$i] + "_toeThumb_Ctrl_GRP")`;
+		string $ThumbPartsGrp = `group -em -n($side[$i] + "_toeThumb_Parts_GRP")`;
+		
+		parent ($side[$i] + "_toeThumb_J?_Offset_GRP") ($ThumbCtrlGrp);
+		parent ($ThumbCtrlGrp) ($ThumbPartsGrp) ($toeCtrlGrp);
+	}
+		
+	    return "arg_doThumbToe";
+}

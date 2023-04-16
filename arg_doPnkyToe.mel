@@ -1,0 +1,50 @@
+global proc string arg_doPnkyToe(string $lPnkyToe[], string $rPnkyToe[])
+{
+	
+	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
+	string $side[] = {"l","r"};
+	$lPnkyToe = `ls ("l_toePnky_J?_JNT")`;	
+	$rPnkyToe = `ls ("r_toePnky_J?_JNT")`;
+	
+	for($i=0; $i<size($lPnkyToe); $i++)
+	{
+		select -r $lPnkyToe[$i];
+		arg_circle;
+		parentConstraint -mo ("l_toePnky_J" + $lib[$i] + "_Con_GRP") ($lPnkyToe[$i]);
+	}
+
+	for($i=0; $i<size($rPnkyToe); $i++)
+	{
+		select -r $rPnkyToe[$i];
+		arg_circle;
+		parentConstraint -mo ("r_toePnky_J" + $lib[$i] + "_Con_GRP") ($rPnkyToe[$i]);
+	}	
+	
+	string $lPnkyConGrp[] = `ls ("l_toePnky_J?_Con_GRP")`;
+	string $lPnkyOffGrp[] = `ls ("l_toePnky_J?_Offset_GRP")`;
+	string $rPnkyConGrp[] = `ls ("r_toePnky_J?_Con_GRP")`;
+	string $rPnkyOffGrp[] = `ls ("r_toePnky_J?_Offset_GRP")`;
+	for ($i=0; $i<(size($lPnkyConGrp)-1); $i++)
+    {
+        parentConstraint -mo $lPnkyConGrp[$i] $lPnkyOffGrp[$i+1];
+        parentConstraint -mo $rPnkyConGrp[$i] $rPnkyOffGrp[$i+1];
+    }
+    
+	for ($i=0; $i<(size($rPnkyConGrp)-1); $i++)
+    {
+        parentConstraint -mo $rPnkyConGrp[$i] $rPnkyOffGrp[$i+1];
+        parentConstraint -mo $rPnkyConGrp[$i] $rPnkyOffGrp[$i+1];
+    }
+		
+	for($i=0; $i<size($side); $i++)
+	{
+		string $toeCtrlGrp = `group -em -n($side[$i] + "_toePnky_GRP")`;
+		string $PnkyCtrlGrp = `group -em -n($side[$i] + "_toePnky_Ctrl_GRP")`;
+		string $PnkyPartsGrp = `group -em -n($side[$i] + "_toePnky_Parts_GRP")`;
+		
+		parent ($side[$i] + "_toePnky_J?_Offset_GRP") ($PnkyCtrlGrp);
+		parent ($PnkyCtrlGrp) ($PnkyPartsGrp) ($toeCtrlGrp);
+	}
+		
+	    return "arg_doPnkyToe";
+}
