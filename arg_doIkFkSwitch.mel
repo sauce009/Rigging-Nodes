@@ -1,0 +1,78 @@
+global proc string arg_doIkFkSwitch()
+{
+	string $side[] = {"l", "r"};
+	string $ikfk_Ctrl = "IkFk_CTRL";
+	string $attr[] = {"tx","ty","tz","rx","ry","rz","sx","sy","sz","v"};
+	for($i=0; $i<size($attr); $i++)
+	{
+		setAttr -lock true -keyable false -channelBox false ($ikfk_Ctrl + "." + $attr[$i]);
+	}
+	
+	addAttr -ln "ArmType" -nn "Arm Type" -at "enum" -en "__________:" $ikfk_Ctrl;
+	setAttr -e-channelBox true -lock true ($ikfk_Ctrl + ".Arm Type");
+		
+	addAttr -ln ("l_IkFkArm") -nn ("l_Ik Fk Arm") -at "double" -defaultValue 0 -minValue 0 -maxValue 1 $ikfk_Ctrl;
+	setAttr -e -keyable true ($ikfk_Ctrl + ".l_Ik Fk Arm") 0;
+	
+	addAttr -ln ("r_IkFkArm") -nn ("r_Ik Fk Arm") -at "double" -defaultValue 0 -minValue 0 -maxValue 1 $ikfk_Ctrl;
+	setAttr -e -keyable true ($ikfk_Ctrl + ".r_Ik Fk Arm") 0;
+	
+	addAttr -ln "LegType" -nn "Leg Type" -at "enum" -en "__________:" $ikfk_Ctrl;
+	setAttr -e-channelBox true -lock true ($ikfk_Ctrl + ".Leg Type");
+	
+	addAttr -ln ("l_IkFkLeg") -nn ("l_Ik Fk Leg") -at "double" -defaultValue 0 -minValue 0 -maxValue 1 $ikfk_Ctrl;
+	setAttr -e -keyable true ($ikfk_Ctrl + ".l_Ik Fk Leg") 0;
+	
+	addAttr -ln ("r_IkFkLeg") -nn ("r_Ik Fk Leg") -at "double" -defaultValue 0 -minValue 0 -maxValue 1 $ikfk_Ctrl;
+	setAttr -e -keyable true ($ikfk_Ctrl + ".r_Ik Fk Leg") 0;
+	
+	addAttr -ln "FngType" -nn "Fng Type" -at "enum" -en "__________:" $ikfk_Ctrl;
+	setAttr -e-channelBox true -lock true ($ikfk_Ctrl + ".Fng Type");
+	
+	addAttr -ln ("l_IkFkFng") -nn ("l_Ik Fk Fng") -at "double" -defaultValue 0 -minValue 0 -maxValue 1 $ikfk_Ctrl;
+	setAttr -e -keyable true ($ikfk_Ctrl + ".l_Ik Fk Fng") 0;
+	
+	addAttr -ln ("r_IkFkFng") -nn ("r_Ik Fk Fng") -at "double" -defaultValue 0 -minValue 0 -maxValue 1 $ikfk_Ctrl;
+	setAttr -e -keyable true ($ikfk_Ctrl + ".r_Ik Fk Fng") 0;
+	
+	for($i=0; $i<size($side); $i++)
+	{
+		if(`objExists ($side[$i] + "_arm_REV")`)
+		{
+			arg_setDrivenKeyframe(($ikfk_Ctrl), {($side[$i] + "_IkFkArm")}, {(1)}, {(0)}, ($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, "linear");
+		}
+		
+		if(`objExists ($side[$i] + "_leg_REV")`)
+		{
+			arg_setDrivenKeyframe(($ikfk_Ctrl), {($side[$i] + "_IkFkLeg")}, {(1)}, {(0)}, ($side[$i] + "_leg_REV"), {"inputX"}, {(1)}, {(0)}, "linear");
+		}
+		
+		if(`objExists ($side[$i] + "_indFng_REV")`)
+		{
+			arg_setDrivenKeyframe(($ikfk_Ctrl), {($side[$i] + "_IkFkFng")}, {(1)}, {(0)}, ($side[$i] + "_indFng_REV"), {"inputX"}, {(1)}, {(0)}, "linear");
+		}
+		
+		if(`objExists ($side[$i] + "_midFng_REV")`)
+		{
+			arg_setDrivenKeyframe(($ikfk_Ctrl), {($side[$i] + "_IkFkFng")}, {(1)}, {(0)}, ($side[$i] + "_midFng_REV"), {"inputX"}, {(1)}, {(0)}, "linear");
+		}
+		
+		if(`objExists ($side[$i] + "_ringFng_REV")`)
+		{
+			arg_setDrivenKeyframe(($ikfk_Ctrl), {($side[$i] + "_IkFkFng")}, {(1)}, {(0)}, ($side[$i] + "_ringFng_REV"), {"inputX"}, {(1)}, {(0)}, "linear");
+		}
+		
+		if(`objExists ($side[$i] + "_pnkyFng_REV")`)
+		{
+			arg_setDrivenKeyframe(($ikfk_Ctrl), {($side[$i] + "_IkFkFng")}, {(1)}, {(0)}, ($side[$i] + "_pnkyFng_REV"), {"inputX"}, {(1)}, {(0)}, "linear");
+		}
+		
+		if(`objExists ($side[$i] + "_thumbFng_REV")`)
+		{
+			arg_setDrivenKeyframe(($ikfk_Ctrl), {($side[$i] + "_IkFkFng")}, {(1)}, {(0)}, ($side[$i] + "_thumbFng_REV"), {"inputX"}, {(1)}, {(0)}, "linear");
+		}
+	}
+	
+	return "arg_doIkFkSwitch";
+	
+}

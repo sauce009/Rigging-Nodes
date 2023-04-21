@@ -1,0 +1,29 @@
+global proc string arg_arbitaryCtrl(string $jnt[], string $name[])
+{
+	string $list[] = $jnt;
+	string $basename[];
+	for($i=0; $i<size($jnt); $i++)
+	{
+		$basename[$i] = basename( $jnt[$i], "_JNT" );
+		if(`objExists ($basename[$i] + "_CTRL")`)
+		{
+			
+		}
+		else
+		{
+			string $ctrl[] = `circle -c 0 0 0 -nr 0 1 0 -r 0.25 -d 1 -s 8 -ch 0 -n ( $basename[$i] + "_CTRL" )`;
+			string $conGrp = `group -em -n ( $basename[$i] + "_Con_GRP" )`;
+			string $offGrp = `group -em -n ( $basename[$i] + "_Offset_GRP" )`;
+			string $modGrp = `group -em -n ( $basename[$i] + "_Modify_GRP" )`;
+			parent ($conGrp) ($ctrl);
+			parent ($modGrp) ($offGrp);
+			parent ($ctrl) ($modGrp);
+			string $con[] = `parentConstraint ($jnt[$i]) ($offGrp)`;
+			delete $con;
+			select -r ($basename[$i] + "_Offset_GRP");
+			searchReplaceNames ($basename[$i]) ($name[$i]) "hierarchy";
+		}
+	}
+	
+	return "arg_circle";
+}

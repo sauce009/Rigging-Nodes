@@ -1,0 +1,70 @@
+global proc string arg_doEye()
+{
+	string $side[] = {"l","r"};
+	float $var[];
+	float $off[];
+	string $con[];
+	string $ctrl[] = `circle -c 0 0 0 -nr 0 1 0 -r 0.25 -d 1 -s 8 -ch 0 -n ( "eye_Main_CTRL" )`;
+	string $conGrp = `group -em -n ( "eye_Main_Con_GRP" )`;
+	string $offGrp = `group -em -n ( "eye_Main_Offset_GRP" )`;
+	string $modGrp = `group -em -n ( "eye_Main_Modify_GRP" )`;
+	parent ($conGrp) ($ctrl);
+	parent ($modGrp) ($offGrp);
+	parent ($ctrl) ($modGrp);
+	
+	for($i=0; $i<size($side); $i++)
+	{
+		select -r ($side[$i] + "_eye_JA_JNT");
+		arg_circle;
+		$var[$i] = `getAttr ($side[$i] + "_eye_JA_JNT" + ".translateZ")`;
+		$off[$i] = ($var[$i]*5);
+		setAttr ($side[$i] + "_eye_JA_Offset_GRP" + ".translateZ") ($off[$i]);
+		aimConstraint -mo -weight 1 -aimVector 1 0 0 -upVector 0 1 0 -worldUpType "vector" -worldUpVector 0 1 0 ($side[$i] + "_eye_JA_Con_GRP") ($side[$i] + "_eye_JA_JNT");
+		$con = `parentConstraint ($side[$i] + "_eye_JA_Offset_GRP") ($offGrp)`;
+	}
+	delete $con;
+	parentConstraint -mo ("eye_Main_Con_GRP") ("l_eye_JA_Offset_GRP");
+	parentConstraint -mo ("eye_Main_Con_GRP") ("r_eye_JA_Offset_GRP");
+	
+	string $eyeGrp = `group -em -n ( "eye_GRP" )`;
+	parent ("eye_Main_Offset_GRP") ("l_eye_JA_Offset_GRP") ("r_eye_JA_Offset_GRP") ($eyeGrp);
+	
+	return "arg_doEye";
+}
+
+global proc string arg_doJaw()
+{
+	select -r jaw_JA_JNT;
+	arg_circle;
+	parentConstraint ("jaw_JA_Con_GRP") ("jaw_JA_JNT");
+	string $jawGrp = `group -em -n ( "jaw_GRP" )`;
+	parent ("jaw_JA_Offset_GRP") ($jawGrp);
+	return "arg_doJaw";
+}
+
+global proc string arg_doHead()
+{
+	select -r head_JA_JNT;
+	arg_circle;
+	parentConstraint -mo ("head_JA_Con_GRP") ("head_JA_JNT");
+	string $headGrp = `group -em -n ( "head_GRP" )`;
+	parent ("head_JA_Offset_GRP") ($headGrp);
+	if(`objExists "jaw_JA_Offset_GRP"`)
+	{
+		parentConstraint -mo ("head_JA_Con_GRP") ("jaw_JA_Offset_GRP");
+	}
+	else
+	{
+		
+	}
+	
+	if(`objExists "eye_Main_Offset_GRP"`)
+	{
+		parentConstraint -mo ("head_JA_Con_GRP") ("eye_Main_Offset_GRP");
+	}
+	else
+	{
+		
+	}
+	return "arg_doHead";
+}

@@ -95,7 +95,7 @@ global proc string arg_doIndexFng(string $lIndFng[], string $rIndFng[])
 			arg_circle;
 			
 			parentConstraint -mo ($side[$i] + "_indFng_IK_Con_GRP") ($side[$i] + "_indFng_poleVec_Offset_GRP");
-			parentConstraint -mo ($side[$i] + "_indFng_IK_Con_GRP") ($side[$i] + "_indFng_IK");
+			pointConstraint -mo ($side[$i] + "_indFng_IK_Con_GRP") ($side[$i] + "_indFng_IK");
 		}
 		
 		for($i=0; $i<size($side); $i++)

@@ -95,7 +95,7 @@ global proc string arg_doThumbFng(string $lThumbFng[], string $rThumbFng[])
 			arg_circle;
 			
 			parentConstraint -mo ($side[$i] + "_thumbFng_IK_Con_GRP") ($side[$i] + "_thumbFng_poleVec_Offset_GRP");
-			parentConstraint -mo ($side[$i] + "_thumbFng_IK_Con_GRP") ($side[$i] + "_thumbFng_IK");
+			pointConstraint -mo ($side[$i] + "_thumbFng_IK_Con_GRP") ($side[$i] + "_thumbFng_IK");
 		}
 		
 		for($i=0; $i<size($side); $i++)

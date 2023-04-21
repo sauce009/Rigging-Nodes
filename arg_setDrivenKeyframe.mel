@@ -24,7 +24,7 @@ global proc string arg_setDrivenKeyframe(string $driver, string $driverAttr[], f
 	{
 		for($i=0; $i<size($driverAttr); $i++)
 		{
-			selectKey -add -k -f ($sdva[$i]) -f ($edva[$i]) ($driver + "." + $driverAttr[$i]) ;
+			selectKey -add -k -f ($sdva[$i]) -f ($edva[$i]) ($driven + "." + $drivenAttr[$i]) ;
 			keyTangent -itt linear -ott $graph;
 		}
 	}

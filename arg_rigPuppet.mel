@@ -2,6 +2,43 @@ global proc string arg_rigPuppet()
 {
 	select -r pelvis_JA_JNT;
 	arg_goTo("TPose");
+	
+	string $element = "charGorilla";
+	
+	rename ("rigBound_" + $element + "_Top_GRP") ("rigPuppet_" + $element + "_Top_GRP");
+	rename ("rigBound_" + $element + "_hubSet") ("rigPuppet_" + $element + "_hubSet");
+	
+	
+	arg_doSpine();
+	
+	arg_doIndexFng({}, {});
+	arg_doMidFng({}, {});
+	arg_doRingFng({}, {});
+	arg_doPnkyFng({}, {});
+	arg_doThumbFng({}, {});
+	
+	arg_doIkFkArm();
+	arg_doIkFkLeg();
+	
+	arg_doEye();
+	arg_doJaw();
+	arg_doHead();
+	
+	
+	string $bodyGrp = `group -em -n("body_GRP")`;
+	parent ("body_GRP") ("global_CTRL");
+	parent 	("headGrp") ("jaw_GRP")
+			("spine_GRP") ("eye_GRP")
+			("l_arm_GRP") ("r_arm_GRP")
+			("l_leg_GRP") ("r_leg_GRP")
+			("l_fngInd_GRP") ("r_fngInd_GRP")
+			("l_fngMid_GRP") ("r_fngMid_GRP")
+			("l_fngRing_GRP") ("r_fngRing_GRP")
+			("l_fngPnky_GRP") ("r_fngPnky_GRP")
+			("l_fngThumb_GRP") ("r_fngThumb_GRP")
+			
+			("skeleton_GRP") ("rig_GRP") 
+			("body_GRP");
 
 	return "arg_rigPuppet";	
 }

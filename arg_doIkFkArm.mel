@@ -4,96 +4,198 @@ global proc string arg_doIkFkArm()
 	
 	for($i=0; $i<size($side); $i++)
 	{
-	string $shldJnt = ($side[$i] + "_shoulder_JA_JNT");
-	string $elbJnt = ($side[$i] + "_elbow_JA_JNT");
-	string $wrstJnt = ($side[$i] + "_hand_JA_JNT");
-	string $hndJnt = ($side[$i] + "_hand_JB_JNT");
-	string $indJnt = ($side[$i] + "_fngIndexBase_JA_JNT");
-	string $midJnt = ($side[$i] + "_fngMid_JA_JNT");
-	string $rngJnt = ($side[$i] + "_fngRingBase_JA_JNT");
-	string $pnkyJnt = ($side[$i] + "_fngPnkyBase_JA_JNT");
-	string $thmbJnt = ($side[$i] + "_fngThumb_JA_JNT");
-	string $sj;
-	string $ee;
-	string $eJnt;
-	string $ctrlGrp;
-	string $ik[];
-	if (`objExists $shldJnt`)
+		string $clvJnt = ($side[$i] + "_clavicle_JA_JNT");
+		string $shldJnt = ($side[$i] + "_shoulder_JA_JNT");
+		string $elbJnt = ($side[$i] + "_elbow_JA_JNT");
+		string $wrstJnt = ($side[$i] + "_hand_JA_JNT");
+		string $hndJnt = ($side[$i] + "_hand_JB_JNT");
+		string $indJnt = ($side[$i] + "_fngIndexBase_JA_JNT");
+		string $midJnt = ($side[$i] + "_fngMid_JA_JNT");
+		string $rngJnt = ($side[$i] + "_fngRingBase_JA_JNT");
+		string $pnkyJnt = ($side[$i] + "_fngPnkyBase_JA_JNT");
+		string $thmbJnt = ($side[$i] + "_fngThumb_JA_JNT");
+		string $ctrlGrp;
+		string $ik[];
+		if (`objExists $clvJnt`)
+		{
+			parent -w $hndJnt $indJnt $midJnt $rngJnt $pnkyJnt $thmbJnt;
+			duplicate $clvJnt;
+			rename ($clvJnt + "1") ($side[$i] + "_clavicleParts_JA_JNT");
+			
+			select -r ($side[$i] + "_clavicleParts_JA_JNT");
+			searchReplaceNames ("_JA_JNT") ("Parts_JA_JNT") "hierarchy";
+			removeJoint ($side[$i] + "_upperArmRollParts_JA_JNT") ($side[$i] + "_lowerArmRollParts_JA_JNT");
+			parent $hndJnt $indJnt $midJnt $rngJnt $pnkyJnt $thmbJnt $wrstJnt;
+			select -cl  ;
+			parent -w ($side[$i] + "_claviclePartsParts_JA_JNT");
+			$ik = `ikHandle -n ($side[$i] + "_arm_IK") -sj ($side[$i] + "_shoulderParts_JA_JNT") -ee ($side[$i] + "_handParts_JA_JNT")`;
+			parentConstraint -mo ($side[$i] + "_claviclePartsParts_JA_JNT") $clvJnt;
+			parentConstraint -mo ($side[$i] + "_shoulderParts_JA_JNT") $shldJnt;
+			parentConstraint -mo ($side[$i] + "_elbowParts_JA_JNT") ($side[$i] + "_elbow_JA_JNT");
+			parentConstraint -mo ($side[$i] + "_handParts_JA_JNT") $wrstJnt;
+			
+			select -r $wrstJnt;
+			arg_circle;
+			
+			select -r ($side[$i] + "_hand_JA_Offset_GRP");
+			string $pole_vec = `searchReplaceNames ("hand_JA") ("arm_IK") "hierarchy"`;
+			
+			select -r $elbJnt;
+			arg_circle;
+			
+			select -r ($side[$i] + "_elbow_JA_Offset_GRP");
+			searchReplaceNames ("_elbow_JA") ("_armPoleVec") "hierarchy";
+			
+			float $shoulder_pos[] = `xform -q -ws -t ($side[$i] + "_shoulder_JA_JNT")`;
+			float $elbow_pos[] = `xform -q -ws -t ($side[$i] + "_elbow_JA_JNT")`;
+			float $hand_pos[] = `xform -q -ws -t ($side[$i] + "_hand_JA_JNT")`;
+			float $shoulder_to_hand[] = {($hand_pos[0]) - ($shoulder_pos[0]),($hand_pos[1]) - ($shoulder_pos[1]),($hand_pos[2]) - ($shoulder_pos[2])};
+			float $shoulder_to_hand_scaled[] = {($shoulder_to_hand[0] / 2),($shoulder_to_hand[1] / 2),($shoulder_to_hand[2] / 2)};
+			float $mid_point[] = {($shoulder_pos[0] + $shoulder_to_hand_scaled[0]),($shoulder_pos[1] + $shoulder_to_hand_scaled[1]),($shoulder_pos[2] + $shoulder_to_hand_scaled[2])};
+			float $mid_point_to_elbow_vec[] = {($elbow_pos[0] - $mid_point[0]),($elbow_pos[1] - $mid_point[1]),($elbow_pos[2] - $mid_point[2])};
+			float $mid_point_to_elbow_vec_scaled[] = {($mid_point_to_elbow_vec[0] * 5),($mid_point_to_elbow_vec[1] * 5),($mid_point_to_elbow_vec[2] * 5)};
+			float $mid_point_to_elbow_point[] = {($mid_point[0] + $mid_point_to_elbow_vec_scaled[0]),($mid_point[1] + $mid_point_to_elbow_vec_scaled[1]),($mid_point[2] + $mid_point_to_elbow_vec_scaled[2])};
+	
+		
+			setAttr -type float3 ($pole_vec + ".translate") $mid_point_to_elbow_point[0] $mid_point_to_elbow_point[1] $mid_point_to_elbow_point[2];
+			
+			poleVectorConstraint  ($side[$i] + "_armPoleVec_Con_GRP") ($side[$i] + "_arm_IK");
+			pointConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") $ik[0];
+			pointConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") ($side[$i] + "_armPoleVec_Offset_GRP");
+			
+			$ctrlGrp = `group -em -n($side[$i] + "_armControls_GRP")`;
+			parent ($side[$i] + "_arm_IK_Offset_GRP") ($side[$i] + "_armPoleVec_Offset_GRP") ($ctrlGrp);
+			$partsGrp = `group -em -n($side[$i] + "_armParts_GRP")`;
+			parent  ($ik[0]) ($side[$i] + "_claviclePartsParts_JA_JNT") ($partsGrp);
+			$mainGrp = `group -em -n($side[$i] + "_arm_GRP")`;
+			parent ($ctrlGrp) ($partsGrp) ($mainGrp);
+			
+		}
+		
+		if (`objExists $shldJnt`)
+		{
+			select -r $clvJnt;
+			arg_circle;
+			
+			select -r $shldJnt;
+			arg_circle;
+			
+			select -r $elbJnt;
+			arg_circle;
+			
+			select -r $wrstJnt;
+			arg_circle;
+			
+			parent ($side[$i] + "_clavicle_JA_Offset_GRP") ($side[$i] + "_shoulder_JA_Offset_GRP") ($side[$i] + "_elbow_JA_Offset_GRP") ($side[$i] + "_hand_JA_Offset_GRP") $ctrlGrp;
+			
+			parentConstraint -mo ($side[$i] + "_clavicle_JA_Con_GRP") ($side[$i] + "_claviclePartsParts_JA_JNT");
+			orientConstraint -mo ($side[$i] + "_shoulder_JA_Con_GRP") ($side[$i] + "_shoulderParts_JA_JNT");
+			orientConstraint -mo ($side[$i] + "_elbow_JA_Con_GRP") ($side[$i] + "_elbowParts_JA_JNT");
+			orientConstraint -mo ($side[$i] + "_hand_JA_Con_GRP") ($side[$i] + "_handParts_JA_JNT");
+			orientConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") ($side[$i] + "_handParts_JA_JNT");
+			
+			parentConstraint -mo ($side[$i] + "_clavicle_JA_Con_GRP") ($side[$i] + "_shoulder_JA_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_shoulder_JA_Con_GRP") ($side[$i] + "_elbow_JA_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_elbow_JA_Con_GRP") ($side[$i] + "_hand_JA_Offset_GRP");
+			
+			string $rev = `createNode reverse -n($side[$i] + "_arm_REV")`;
+			connectAttr -f ($rev + ".outputX") ($ik[0] + ".ikBlend");
+		}
+	}
+	
+	for($i=0; $i<size($side); $i++)
 	{
-		parent -w $hndJnt $indJnt $midJnt $rngJnt $pnkyJnt $thmbJnt;
-		duplicate $shldJnt;
-		$sj = `rename ($shldJnt+"1") ($side[$i] + "_ikShoulder_JA_JNT")`;
-		$eJnt = `rename ($side[$i] + "_ikShoulder_JA_JNT|" + $side[$i] + "_upperArmRoll_JA_JNT|" +$side[$i] + "_elbow_JA_JNT") ($side[$i] + "_ikElbow_JA_JNT")`;
-		$ee = `rename ($side[$i] + "_ikElbow_JA_JNT|" + $side[$i] + "_lowerArmRoll_JA_JNT|" + $side[$i] + "_hand_JA_JNT") ($side[$i] + "_ikHand_JA_JNT")`;
-		rename ($side[$i] + "_ikShoulder_JA_JNT|" + $side[$i] + "_upperArmRoll_JA_JNT") "A";
-		rename ($side[$i] + "_ikElbow_JA_JNT|" + $side[$i] + "_lowerArmRoll_JA_JNT") "B";
-		select -r A B;
-		RemoveJoint;
-		parent $hndJnt $indJnt $midJnt $rngJnt $pnkyJnt $thmbJnt $wrstJnt;
-		select -cl  ;
-		parent -w $sj;
-		$ik = `ikHandle -n ($side[$i] + "_arm_IK") -sj $sj -ee $ee`;
-		parentConstraint -mo $sj $shldJnt;
-		parentConstraint -mo $eJnt ($side[$i] + "_elbow_JA_JNT");
-		parentConstraint -mo $ee $wrstJnt;
-		
-		select -r $ik[0];
-		arg_circle;
-
-		select -r $eJnt;
-		arg_circle;
-
-		select -r ($side[$i] + "_ikElbow_JA_Offset_GRP");
-		string $pole_vec = `searchReplaceNames ("ikElbow_JA") ("armPoleVec") "hierarchy"`;
-		
-		float $shoulder_pos[] = `xform -q -ws -t ($side[$i] + "_shoulder_JA_JNT")`;
-		float $elbow_pos[] = `xform -q -ws -t ($side[$i] + "_elbow_JA_JNT")`;
-		float $hand_pos[] = `xform -q -ws -t ($side[$i] + "_hand_JA_JNT")`;
-		float $shoulder_to_hand[] = {($hand_pos[0]) - ($shoulder_pos[0]),($hand_pos[1]) - ($shoulder_pos[1]),($hand_pos[2]) - ($shoulder_pos[2])};
-		float $shoulder_to_hand_scaled[] = {($shoulder_to_hand[0] / 2),($shoulder_to_hand[1] / 2),($shoulder_to_hand[2] / 2)};
-		float $mid_point[] = {($shoulder_pos[0] + $shoulder_to_hand_scaled[0]),($shoulder_pos[1] + $shoulder_to_hand_scaled[1]),($shoulder_pos[2] + $shoulder_to_hand_scaled[2])};
-		float $mid_point_to_elbow_vec[] = {($elbow_pos[0] - $mid_point[0]),($elbow_pos[1] - $mid_point[1]),($elbow_pos[2] - $mid_point[2])};
-		float $mid_point_to_elbow_vec_scaled[] = {($mid_point_to_elbow_vec[0] * 5),($mid_point_to_elbow_vec[1] * 5),($mid_point_to_elbow_vec[2] * 5)};
-		float $mid_point_to_elbow_point[] = {($mid_point[0] + $mid_point_to_elbow_vec_scaled[0]),($mid_point[1] + $mid_point_to_elbow_vec_scaled[1]),($mid_point[2] + $mid_point_to_elbow_vec_scaled[2])};
-
-	
-		setAttr -type float3 ($pole_vec + ".translate") $mid_point_to_elbow_point[0] $mid_point_to_elbow_point[1] $mid_point_to_elbow_point[2];
-		
-		poleVectorConstraint  ($side[$i] + "_armPoleVec_Con_GRP") ($side[$i] + "_arm_IK");
-				
-		parentConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") $ik[0];
-		$ctrlGrp = `group -em -n($side[$i] + "_armControls_GRP")`;
-		parent ($side[$i] + "_arm_IK_Offset_GRP") ($side[$i] + "_armPoleVec_Offset_GRP") ($ctrlGrp);
-		$partsGrp = `group -em -n($side[$i] + "_armParts_GRP")`;
-		parent  ($ik[0]) ($sj) ($partsGrp);
-		$mainGrp = `group -em -n($side[$i] + "_arm_GRP")`;
-		parent ($ctrlGrp) ($partsGrp) ($mainGrp);
+		arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_shoulderParts_JA_JNT_orientConstraint1"), {($side[$i] + "_shoulder_JA_Con_GRPW0")}, {(1)}, {(0)}, "linear");
+		arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_elbowParts_JA_JNT_orientConstraint1"), {($side[$i] + "_elbow_JA_Con_GRPW0")}, {(1)}, {(0)}, "linear");
+		arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_handParts_JA_JNT_orientConstraint1"), {($side[$i] + "_hand_JA_Con_GRPW0")}, {(1)}, {(0)}, "linear");
+		arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_handParts_JA_JNT_orientConstraint1"), {($side[$i] + "_arm_IK_Con_GRPW1")}, {(0)}, {(1)}, "linear");
+		setAttr ($side[$i] + "_armParts_GRP.visibility") 0;
 	}
 	
-	if (`objExists $shldJnt`)
+	for($i=0; $i<size($side); $i++)
 	{
-		select -r $shldJnt;
-		arg_circle;
+		if(`objExists ($side[$i] + "_fngInd_GRP")`)
+		{
+			parentConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") ($side[$i] + "_fngIndex_JA_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_hand_JA_Con_GRP") ($side[$i] + "_fngIndex_JA_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") ($side[$i] + "_indFng_IK_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_hand_JA_Con_GRP") ($side[$i] + "_indFng_IK_Offset_GRP");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_fngIndex_JA_Offset_GRP_parentConstraint1"), {($side[$i] + "_hand_JA_Con_GRPW1")}, {(1)}, {(0)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_fngIndex_JA_Offset_GRP_parentConstraint1"), {($side[$i] + "_arm_IK_Con_GRPW0")}, {(0)}, {(1)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_indFng_IK_Offset_GRP_parentConstraint1"), {($side[$i] + "_arm_IK_Con_GRPW0")}, {(0)}, {(1)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_indFng_IK_Offset_GRP_parentConstraint1"), {($side[$i] + "_hand_JA_Con_GRPW1")}, {(1)}, {(0)}, "linear");
+		}
+		else
+		{
+
+		}
 		
-		select -r $elbJnt;
-		arg_circle;
+		if(`objExists ($side[$i] + "_fngMid_GRP")`)
+		{
+			parentConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") ($side[$i] + "_fngMid_JA_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_hand_JA_Con_GRP") ($side[$i] + "_fngMid_JA_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") ($side[$i] + "_midFng_IK_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_hand_JA_Con_GRP") ($side[$i] + "_midFng_IK_Offset_GRP");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_fngMid_JA_Offset_GRP_parentConstraint1"), {($side[$i] + "_hand_JA_Con_GRPW1")}, {(1)}, {(0)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_fngMid_JA_Offset_GRP_parentConstraint1"), {($side[$i] + "_arm_IK_Con_GRPW0")}, {(0)}, {(1)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_midFng_IK_Offset_GRP_parentConstraint1"), {($side[$i] + "_arm_IK_Con_GRPW0")}, {(0)}, {(1)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_midFng_IK_Offset_GRP_parentConstraint1"), {($side[$i] + "_hand_JA_Con_GRPW1")}, {(1)}, {(0)}, "linear");
+		}
+		else
+		{
+			
+		}
+
+		if(`objExists ($side[$i] + "_fngRing_GRP")`)
+		{
+			parentConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") ($side[$i] + "_fngRing_JA_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_hand_JA_Con_GRP") ($side[$i] + "_fngRing_JA_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") ($side[$i] + "_ringFng_IK_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_hand_JA_Con_GRP") ($side[$i] + "_ringFng_IK_Offset_GRP");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_fngRing_JA_Offset_GRP_parentConstraint1"), {($side[$i] + "_hand_JA_Con_GRPW1")}, {(1)}, {(0)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_fngRing_JA_Offset_GRP_parentConstraint1"), {($side[$i] + "_arm_IK_Con_GRPW0")}, {(0)}, {(1)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_ringFng_IK_Offset_GRP_parentConstraint1"), {($side[$i] + "_arm_IK_Con_GRPW0")}, {(0)}, {(1)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_ringFng_IK_Offset_GRP_parentConstraint1"), {($side[$i] + "_hand_JA_Con_GRPW1")}, {(1)}, {(0)}, "linear");
+		}
+		else
+		{
+			
+		}
+
+		if(`objExists ($side[$i] + "_fngPnky_GRP")`)
+		{
+			parentConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") ($side[$i] + "_fngPnky_JA_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_hand_JA_Con_GRP") ($side[$i] + "_fngPnky_JA_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") ($side[$i] + "_pnkyFng_IK_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_hand_JA_Con_GRP") ($side[$i] + "_pnkyFng_IK_Offset_GRP");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_fngPnky_JA_Offset_GRP_parentConstraint1"), {($side[$i] + "_hand_JA_Con_GRPW1")}, {(1)}, {(0)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_fngPnky_JA_Offset_GRP_parentConstraint1"), {($side[$i] + "_arm_IK_Con_GRPW0")}, {(0)}, {(1)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_pnkyFng_IK_Offset_GRP_parentConstraint1"), {($side[$i] + "_arm_IK_Con_GRPW0")}, {(0)}, {(1)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_pnkyFng_IK_Offset_GRP_parentConstraint1"), {($side[$i] + "_hand_JA_Con_GRPW1")}, {(1)}, {(0)}, "linear");
+		}
+		else
+		{
+			
+		}
+
+		if(`objExists ($side[$i] + "_fngThumb_GRP")`)
+		{
+			parentConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") ($side[$i] + "_fngThumb_JA_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_hand_JA_Con_GRP") ($side[$i] + "_fngThumb_JA_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_arm_IK_Con_GRP") ($side[$i] + "_thumbFng_IK_Offset_GRP");
+			parentConstraint -mo ($side[$i] + "_hand_JA_Con_GRP") ($side[$i] + "_thumbFng_IK_Offset_GRP");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_fngThumb_JA_Offset_GRP_parentConstraint1"), {($side[$i] + "_hand_JA_Con_GRPW1")}, {(1)}, {(0)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_fngThumb_JA_Offset_GRP_parentConstraint1"), {($side[$i] + "_arm_IK_Con_GRPW0")}, {(0)}, {(1)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_thumbFng_IK_Offset_GRP_parentConstraint1"), {($side[$i] + "_arm_IK_Con_GRPW0")}, {(0)}, {(1)}, "linear");
+			arg_setDrivenKeyframe(($side[$i] + "_arm_REV"), {"inputX"}, {(1)}, {(0)}, ($side[$i] + "_thumbFng_IK_Offset_GRP_parentConstraint1"), {($side[$i] + "_hand_JA_Con_GRPW1")}, {(1)}, {(0)}, "linear");
+		}
+		else
+		{
+			
+		}
 		
-		select -r $wrstJnt;
-		arg_circle;
-		
-		parent ($side[$i] + "_shoulder_JA_Offset_GRP") ($side[$i] + "_elbow_JA_Offset_GRP") ($side[$i] + "_hand_JA_Offset_GRP") $ctrlGrp;
-		
-		orientConstraint -mo ($side[$i] + "_shoulder_JA_Con_GRP") $sj;
-		orientConstraint -mo ($side[$i] + "_elbow_JA_Con_GRP") $eJnt;
-		orientConstraint -mo ($side[$i] + "_hand_JA_Con_GRP") $ee;
-		
-		parentConstraint -mo ($side[$i] + "_shoulder_JA_Con_GRP") ($side[$i] + "_elbow_JA_Offset_GRP");
-		parentConstraint -mo ($side[$i] + "_elbow_JA_Con_GRP") ($side[$i] + "_hand_JA_Offset_GRP");
-		
-		string $rev = `createNode reverse -n($side[$i] + "_arm_REV")`;
-		connectAttr -f ($rev + ".outputX") ($ik[0] + ".ikBlend");
 	}
 	
-	}
 	return "arg_doIkFkArm";
+	
 }

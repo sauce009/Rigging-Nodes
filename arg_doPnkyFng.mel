@@ -95,7 +95,7 @@ global proc string arg_doPnkyFng(string $lPnkyFng[], string $rPnkyFng[])
 			arg_circle;
 			
 			parentConstraint -mo ($side[$i] + "_pnkyFng_IK_Con_GRP") ($side[$i] + "_pnkyFng_poleVec_Offset_GRP");
-			parentConstraint -mo ($side[$i] + "_pnkyFng_IK_Con_GRP") ($side[$i] + "_pnkyFng_IK");
+			pointConstraint -mo ($side[$i] + "_pnkyFng_IK_Con_GRP") ($side[$i] + "_pnkyFng_IK");
 		}
 		
 		for($i=0; $i<size($side); $i++)

@@ -1,6 +1,7 @@
 global proc string arg_doSpine()
 {
-	string $jnt[] = {"spine_JA_JNT","spine_JB_JNT","spine_JC_JNT","spine_JD_JNT","spine_JE_JNT","spine_JF_JNT","spine_JG_JNT"};
+	string $side[] = {"l", "r"};
+	string $jnt[] = `ls "spine_J?_JNT"`;
 	string $lib[] = {"A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z"};
 	string $trans[];
 	string $sam[];
@@ -26,7 +27,7 @@ global proc string arg_doSpine()
 		parent $offGrp $mainOffGrp;
 	}
 
-	string $loc[] = {"hermiteSpineA_LOC","hermiteSpineB_LOC","hermiteSpineC_LOC","hermiteSpineD_LOC","hermiteSpineE_LOC","hermiteSpineF_LOC","hermiteSpineG_LOC"};
+	string $loc[] = `ls "hermiteSpine?_LOC"`;
 	float $a[] = `getAttr ($loc[0] + ".translate")`;
 	float $b[] = `getAttr ($loc[1] + ".translate")`;
 	float $c[] = `getAttr ($loc[2] + ".translate")`;
@@ -121,25 +122,54 @@ global proc string arg_doSpine()
 	parentConstraint -mo ($sam[4]) ($jnt[4]);
 	parentConstraint -mo ($sam[5]) ($jnt[5]);
 	parentConstraint -mo ($sam[6]) ($jnt[6]);
+	for($i=0; $i<size($side); $i++)
+	{
+		arg_arbitaryCtrl({$side[$i] + "_hip_JA_JNT"},{$side[$i] + "_hip"});
+	}
+	arg_arbitaryCtrl({"spine_JA_JNT"},{"ikSpline_A"});
+	arg_arbitaryCtrl({"spine_JD_JNT"},{"ikSpline_B"});	
+	arg_arbitaryCtrl({"spine_JG_JNT"},{"ikSpline_C"});
+	arg_arbitaryCtrl({"spine_JA_JNT"},{"ikHybridSpline_A"});
+	arg_arbitaryCtrl({"spine_JD_JNT"},{"ikHybridSpline_B"});
+	arg_arbitaryCtrl({"pelvis_JA_JNT"},{"pelvis"});
 	
-	select -r spine_JA_JNT ;
-	arg_circle;
-	parentConstraint -mo ("spine_JA_Con_GRP") ("hermiteSpineA_Offset_GRP");
-	parentConstraint -mo ("spine_JA_Con_GRP") ("pelvis_JA_JNT");
+	/*
+	string $rev = `createNode reverse -n("ikfkSpine_REV")`;
+	for($i=0; $i<size($jnt); $i++)
+	{
+		arg_arbitaryCtrl({"spine_J" + $lib[$i] + "_JNT"},{"fkSpine_" + $lib[$i]});
+		parentConstraint -mo ("fkSpine_" + $lib[$i] + "_Con_GRP") ("spine_J" + $lib[$i] + "_JNT");
+		arg_setDrivenKeyframe(($rev), {"inputX"}, {(1)}, {(0)}, ("spine_J" + $lib[$i] + "_JNT_parentConstraint1"), {"hermiteSpine" + $lib[$i] + "_JNTW0"}, {(1)}, {(0)}, "linear");
+		arg_setDrivenKeyframe(($rev), {"inputX"}, {(1)}, {(0)}, ("spine_J" + $lib[$i] + "_JNT_parentConstraint1"), {"fkSpine_" + $lib[$i] + "_Con_GRPW1"}, {(0)}, {(1)}, "linear");
+	}
+	*/
 	
-	select -r spine_JG_JNT ;
-	arg_circle;
-	parentConstraint -mo ("spine_JG_Con_GRP") ("hermiteSpineG_Modify_GRP");
-	
-	select -r spine_JD_JNT ;
-	arg_circle;
-	parentConstraint -mo ("spine_JD_Con_GRP") ("hermiteSpineD_Offset_GRP");
+	parentConstraint -mo ("l_hip_Con_GRP") ("hermiteSpineA_Offset_GRP");
+	parentConstraint -mo ("r_hip_Con_GRP") ("l_hip_Offset_GRP");
+	parentConstraint -mo ("ikSpline_A_Con_GRP") ("r_hip_Offset_GRP");
+	parentConstraint -mo ("hermiteSpineA_Con_GRP") ("pelvis_JA_JNT");
+	parentConstraint -mo ("ikSpline_B_Con_GRP") ("hermiteSpineD_Offset_GRP");
+	parentConstraint -mo ("ikSpline_C_Con_GRP") ("hermiteSpineG_Modify_GRP");
+	parentConstraint -mo ("ikHybridSpline_A_Con_GRP") ("ikHybridSpline_B_Offset_GRP");
+	parentConstraint -mo ("ikHybridSpline_B_Con_GRP") ("ikSpline_C_Offset_GRP");
+	parentConstraint -mo ("pelvis_Con_GRP") ("ikSpline_A_Offset_GRP");
+	parentConstraint -mo ("pelvis_Con_GRP") ("ikHybridSpline_A_Offset_GRP");
 	
 	$ctrlGrp = `group -em -n("spineControls_GRP")`;
-	parent ("spine_JA_Offset_GRP") ("spine_JD_Offset_GRP") ("spine_JG_Offset_GRP") $ctrlGrp;
+	parent ("pelvis_Offset_GRP") ("ikSpline_A_Offset_GRP") ("ikSpline_B_Offset_GRP") ("ikSpline_C_Offset_GRP") ("ikHybridSpline_A_Offset_GRP") ("ikHybridSpline_B_Offset_GRP") ("l_hip_Offset_GRP") ("r_hip_Offset_GRP") $ctrlGrp;
 	
 	$mainGrp = `group -em -n("spine_GRP")`;
 	parent $ctrlGrp $partsGrp $mainGrp;
+
+	setAttr ($partsGrp + ".visibility") 0;
+	
+	for($i=0; $i<size($side); $i++)
+	{
+		if(`objExists ($side[$i] + "_clavicle_JA_Offset_GRP")`)
+		{
+			parentConstraint -mo ("ikSpline_C_Con_GRP") ($side[$i] + "_clavicle_JA_Offset_GRP");
+		}
+	}
 	
 	return "arg_doSpine";
 }

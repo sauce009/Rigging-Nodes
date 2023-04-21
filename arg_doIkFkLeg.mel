@@ -49,25 +49,33 @@ global proc string arg_doIkFkLeg()
 	{
 		select -r $hipJnt;
 		arg_circle;
+		select -r ($side[$i] + "_hip_JA_Offset_GRP");
+		searchReplaceNames ("_hip_") ("_fkHip_") "hierarchy";
 		
 		select -r $kneeJnt;
 		arg_circle;
+		select -r ($side[$i] + "_knee_JA_Offset_GRP");
+		searchReplaceNames ("_knee_") ("_fkKnee_") "hierarchy";
 		
 		select -r $footJnt;
 		arg_circle;
+		select -r ($side[$i] + "_foot_JA_Offset_GRP");
+		searchReplaceNames ("_foot_") ("_fkFoot_") "hierarchy";
 		
-		parent ($side[$i] + "_hip_JA_Offset_GRP") ($side[$i] + "_knee_JA_Offset_GRP") ($side[$i] + "_foot_JA_Offset_GRP") $ctrlGrp;
+		parent ($side[$i] + "_fkHip_JA_Offset_GRP") ($side[$i] + "_fkKnee_JA_Offset_GRP") ($side[$i] + "_fkFoot_JA_Offset_GRP") $ctrlGrp;
 		
-		orientConstraint -mo ($side[$i] + "_hip_JA_Con_GRP") $hipJnt;
-		orientConstraint -mo ($side[$i] + "_knee_JA_Con_GRP") $kneeJnt;
-		orientConstraint -mo ($side[$i] + "_foot_JA_Con_GRP") $footJnt;
+		orientConstraint -mo ($side[$i] + "_fkHip_JA_Con_GRP") $hipJnt;
+		orientConstraint -mo ($side[$i] + "_fkKnee_JA_Con_GRP") $kneeJnt;
+		orientConstraint -mo ($side[$i] + "_fkFoot_JA_Con_GRP") $footJnt;
 		
-		parentConstraint -mo ($side[$i] + "_hip_JA_Con_GRP") ($side[$i] + "_knee_JA_Offset_GRP");
-		parentConstraint -mo ($side[$i] + "_knee_JA_Con_GRP") ($side[$i] + "_foot_JA_Offset_GRP");
+		parentConstraint -mo ($side[$i] + "_fkHip_JA_Con_GRP") ($side[$i] + "_fkKnee_JA_Offset_GRP");
+		parentConstraint -mo ($side[$i] + "_fkKnee_JA_Con_GRP") ($side[$i] + "_fkFoot_JA_Offset_GRP");
 		
-		string $rev = `createNode reverse -n($side[$i] + "_leg_GRP_REV")`;
+		string $rev = `createNode reverse -n($side[$i] + "_leg_REV")`;
 		connectAttr -f ($rev + ".outputX") ($ik[0] + ".ikBlend");
 	}
+
+	setAttr ($side[$i] + "_legParts_GRP.visibility") 0;
 	
 	}
 	return "arg_doIkFkLeg";
