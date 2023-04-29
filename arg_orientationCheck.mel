@@ -1,0 +1,20 @@
+global proc string arg_orientationCheck()
+{
+	string $cone = "AxisCone";
+	string $sell[] = `ls -sl`;
+	string $axis[];
+	string $ax;
+	for($i=0; $i<size($sell); $i++)
+	{
+		$axis = `duplicate -rr $cone`;
+		$ax = `rename $axis ($sell[$i] + "_AX")`;
+		parentConstraint $sell[$i] $ax;
+		
+		setAttr ($ax + ".scaleX") .25;
+		setAttr ($ax + ".scaleY") .25;
+		setAttr ($ax + ".scaleZ") .25;
+		makeIdentity -apply true -t 0 -r 0 -s 1 -n 0 -pn 1 $ax;
+		
+	}
+	return "arg_orientationCheck";
+}

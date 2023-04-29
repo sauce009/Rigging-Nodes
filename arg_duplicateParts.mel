@@ -1,0 +1,10 @@
+global proc string arg_duplicateParts(string $sel, string $name, string $basename, string $fix)
+{
+	duplicate $sel;
+	rename ($sel + "1") ($name);
+	select -r $name;
+	pickWalk -d down;
+	searchReplaceNames ($basename) ($fix) "hierarchy";
+	
+	return "arg_duplicateParts";
+}

@@ -1,7 +1,10 @@
-global proc string arg_arbitaryCtrl(string $jnt[], string $name[])
+global proc string arg_arbitaryCtrl(string $jnt[], string $name[], float $doCon)
 {
 	string $list[] = $jnt;
 	string $basename[];
+	string $conGrp;
+	string $offGrp;
+	string $modGrp;
 	for($i=0; $i<size($jnt); $i++)
 	{
 		$basename[$i] = basename( $jnt[$i], "_JNT" );
@@ -12,9 +15,9 @@ global proc string arg_arbitaryCtrl(string $jnt[], string $name[])
 		else
 		{
 			string $ctrl[] = `circle -c 0 0 0 -nr 0 1 0 -r 0.25 -d 1 -s 8 -ch 0 -n ( $basename[$i] + "_CTRL" )`;
-			string $conGrp = `group -em -n ( $basename[$i] + "_Con_GRP" )`;
-			string $offGrp = `group -em -n ( $basename[$i] + "_Offset_GRP" )`;
-			string $modGrp = `group -em -n ( $basename[$i] + "_Modify_GRP" )`;
+			$conGrp = `group -em -n ( $basename[$i] + "_Con_GRP" )`;
+			$offGrp = `group -em -n ( $basename[$i] + "_Offset_GRP" )`;
+			$modGrp = `group -em -n ( $basename[$i] + "_Modify_GRP" )`;
 			parent ($conGrp) ($ctrl);
 			parent ($modGrp) ($offGrp);
 			parent ($ctrl) ($modGrp);
@@ -22,8 +25,49 @@ global proc string arg_arbitaryCtrl(string $jnt[], string $name[])
 			delete $con;
 			select -r ($basename[$i] + "_Offset_GRP");
 			searchReplaceNames ($basename[$i]) ($name[$i]) "hierarchy";
+			if($doCon == 1)
+			{
+				pointConstraint -mo ($name[$i] + "_Con_GRP") $jnt;
+			}
+			else
+			{
+
+			}
+			if($doCon == 2)
+			{
+				orientConstraint -mo ($name[$i] + "_Con_GRP") $jnt;
+			}
+			else
+			{
+				
+			}
+			if($doCon == 3)
+			{
+				scaleConstraint -mo ($name[$i] + "_Con_GRP") $jnt;
+			}
+			else
+			{
+				
+			}
+			if($doCon == 4)
+			{
+				parentConstraint -mo ($name[$i] + "_Con_GRP") $jnt;
+			}
+			else
+			{
+				
+			}
+			if($doCon == 5)
+			{
+				parentConstraint -mo ($name[$i] + "_Con_GRP") $jnt;
+				scaleConstraint -mo ($name[$i] + "_Con_GRP") $jnt;
+			}
+			else
+			{
+				
+			}
 		}
 	}
 	
-	return "arg_circle";
+	return "arg_arbitaryCtrl";
 }
