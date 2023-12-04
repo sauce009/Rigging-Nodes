@@ -1,0 +1,236 @@
+global proc arg_WeightMapUI()
+{
+    if (`window -exists WeightMapUI`)
+    {
+        deleteUI WeightMapUI;
+    }
+    
+    string $window = `window -title "Weight Map UI" WeightMapUI`;
+    string $form = `formLayout -numberOfDivisions 100`;
+    string $driverField = `textField -tx ""`;
+    string $driverBtn = `button -l "DRIVER" -c ("arg_UpdateDriverField " + $driverField)`;
+    string $drivenField = `textField -tx ""`;
+    string $drivenBtn = `button -l "DRIVEN" -c ("arg_UpdateDrivenField " + $drivenField)`;
+    string $driver = `textScrollList -numberOfRows 10 -allowMultiSelection false -selectCommand ("arg_PaintMapPanelA") driverList`;
+    string $driven = `textScrollList -numberOfRows 10 -allowMultiSelection false -selectCommand ("arg_PaintMapPanelB") drivenList`;
+    string $refresh = `button -l "REFRESH" -c ("arg_RefreshNodes " + $driverField + " " + $drivenField)`;
+    string $copy = `button -l "COPY WEIGHT" -c ("arg_CopyWeight " + $driver + " " + $driven)`;
+    string $follow = `button -l "FOLLOW" -c ("arg_FollowWeight " + $driver + " " + $driven)`;
+    string $unfollow = `button -l "UNFOLLOW" -c ("arg_UnfollowWeight " + $driver + " " + $driven)`;
+    
+    formLayout -edit
+        -attachForm     $driverField     "top"    5
+        -attachForm     $driverField     "left"   5
+        -attachControl  $driverField     "bottom" 5 $drivenField
+        -attachPosition $driverField     "right"  5 75
+        
+        -attachForm     $driverBtn "top"    5
+        -attachPosition $driverBtn "left"   0 75
+        -attachControl  $driverBtn "bottom" 5 $drivenBtn
+        -attachForm     $driverBtn "right"  5
+        
+        -attachForm     $drivenField     "top"    35
+        -attachForm     $drivenField     "left"   5
+        -attachControl  $drivenField     "bottom" 5 $driver
+        -attachPosition $drivenField     "right"  5 75
+        
+        -attachForm     $drivenBtn "top"    35
+        -attachPosition $drivenBtn "left"   0 75
+        -attachControl  $drivenBtn "bottom" 5 $driver
+        -attachForm     $drivenBtn "right"  5
+        
+        -attachForm     $driver     "top"    65
+        -attachForm     $driver     "left"   5
+        -attachControl  $driver     "bottom" 5 $refresh
+        -attachPosition $driver     "right"  5 50
+        
+        -attachForm     $driven "top"    65
+        -attachPosition $driven "left"   0 50
+        -attachControl  $driven "bottom" 5 $refresh
+        -attachForm     $driven "right"  5
+        
+        -attachNone     $refresh     "top"    
+        -attachForm     $refresh     "left"   5
+        -attachControl  $refresh     "bottom" 5 $copy
+        -attachForm     $refresh     "right"  5
+        
+        -attachNone        $copy     "top"    
+        -attachForm        $copy     "left"   5
+        -attachControl     $copy     "bottom" 5 $follow
+        -attachForm        $copy     "right"  5
+        
+        -attachNone        $follow     "top"    
+        -attachForm        $follow     "left"   5
+        -attachForm        $follow     "bottom" 5
+        -attachPosition    $follow     "right"  5 50
+        
+        -attachNone        $unfollow     "top"    
+        -attachPosition    $unfollow     "left"   5 50
+        -attachForm        $unfollow     "bottom" 5
+        -attachForm        $unfollow     "right"  5
+        
+    $form;
+    
+    showWindow $window;
+}
+
+global proc arg_UpdateDriverField(string $textField)
+{
+    string $selectedObjects[] = `ls -selection`;
+    if (size($selectedObjects) > 0)
+    {
+        string $selectedObject = $selectedObjects[0];
+        textField -edit -text $selectedObject $textField;
+    }
+    else
+    {
+        textField -edit -text "Selected Object: None" $textField;
+    }
+}
+
+global proc arg_UpdateDrivenField(string $textField)
+{
+    string $selectedObjects[] = `ls -selection`;
+    if (size($selectedObjects) > 0)
+    {
+        string $selectedObject = $selectedObjects[0];
+        textField -edit -text $selectedObject $textField;
+    }
+    else
+    {
+        textField -edit -text "Selected Object: None" $textField;
+    }
+}
+
+global proc arg_RefreshNodes(string $driverField, string $drivenField)
+{
+    string $driverText = `textField -query -text $driverField`;
+    string $drivenText = `textField -query -text $drivenField`;
+    string $inputNodes_A[] = `listHistory -pdo true -f false -gl true $driverText`;
+    string $inputNodes_B[] = `listHistory -pdo true -f false -gl true $drivenText`;
+
+    // Clear the existing list
+    textScrollList -edit -removeAll driverList;
+
+    for ($obj in $inputNodes_A)
+    {
+        // Check if the node has a weight map
+        if (`attributeExists "weight" $obj` || `attributeExists "weightList" $obj`)
+        {
+            textScrollList -edit -append $obj driverList;
+        }
+    }
+    
+    // Clear the existing list
+    textScrollList -edit -removeAll drivenList;
+
+    for ($obj in $inputNodes_B)
+    {
+        // Check if the node has a weight map
+        if (`attributeExists "weight" $obj` || `attributeExists "weightList" $obj`)
+        {
+            textScrollList -edit -append $obj drivenList;
+        }
+    }
+}
+
+// Callback to paintMap
+global proc arg_PaintMapPanelA()
+{
+    /*
+    select -r "pSphere1";
+    // Get selected items from the driverList
+    string $selectedItemsA[] = `textScrollList -q -si driverList`;
+    
+    // Select the paint weight tool
+    ArtPaintAttrTool;
+    
+    // Activate the paint weight tool on the specified object
+    artAttrToolScript 4 $selectedItemsA[0];
+    */
+}
+
+global proc arg_PaintMapPanelB()
+{
+    /*
+    // Get selected items from the driverList
+    string $selectedItemsB[] = `textScrollList -q -si drivenList`;
+
+    // Print selected items
+    for ($item in $selectedItemsB)
+    {
+        print($item + "\n");
+        // Select the object you want to paint weights on
+        
+        // Select the paint weight tool
+        ArtPaintAttrTool;
+        
+        // Activate the paint weight tool on the specified object
+        artAttrToolScript 4 $item;
+    }
+    */
+}
+
+// Callback to copy weight
+global proc arg_CopyWeight(string $driverList, string $drivenList)
+{
+    // Get selected items from both textScrollLists
+    string $selectedDriverItems[] = `textScrollList -q -si $driverList`;
+    string $selectedDrivenItems[] = `textScrollList -q -si $drivenList`;
+    for ($i=0; $i<size($selectedDriverItems); $i++)
+    {
+        // Check if the node has a weight or weightList
+        if (`attributeExists "weightList" $selectedDriverItems[$i]`)
+        {
+            connectAttr -f ($selectedDriverItems[$i] + ".weightList[0]") ($selectedDrivenItems[$i] + ".weightList[0]");
+            disconnectAttr ($selectedDriverItems[$i] + ".weightList[0]") ($selectedDrivenItems[$i] + ".weightList[0]");
+        }
+        else
+        {
+            connectAttr -f ($selectedDriverItems[$i] + ".weight[0]") ($selectedDrivenItems[$i] + ".weight[0]");
+            disconnectAttr ($selectedDriverItems[$i] + ".weight[0]") ($selectedDrivenItems[$i] + ".weight[0]");
+        }
+    }
+}
+
+// Callback to follow weight
+global proc arg_FollowWeight(string $driverList, string $drivenList)
+{
+    // Get selected items from both textScrollLists
+    string $selectedDriverItems[] = `textScrollList -q -si $driverList`;
+    string $selectedDrivenItems[] = `textScrollList -q -si $drivenList`;
+    for ($i=0; $i<size($selectedDriverItems); $i++)
+    {
+        // Check if the node has a weight or weightList
+        if (`attributeExists "weightList" $selectedDriverItems[$i]`)
+        {
+            connectAttr -f ($selectedDriverItems[$i] + ".weightList[0]") ($selectedDrivenItems[$i] + ".weightList[0]");
+        }
+        else
+        {
+            connectAttr -f ($selectedDriverItems[$i] + ".weight[0]") ($selectedDrivenItems[$i] + ".weight[0]");
+        }
+    }
+}
+
+// Callback to unfollow weight
+global proc arg_UnfollowWeight(string $driverList, string $drivenList)
+{
+    // Get selected items from both textScrollLists
+    string $selectedDriverItems[] = `textScrollList -q -si $driverList`;
+    string $selectedDrivenItems[] = `textScrollList -q -si $drivenList`;
+    for ($i=0; $i<size($selectedDriverItems); $i++)
+    {
+        // Check if the node has a weight or weightList
+        if (`attributeExists "weightList" $selectedDriverItems[$i]`)
+        {
+            disconnectAttr ($selectedDriverItems[$i] + ".weightList[0]") ($selectedDrivenItems[$i] + ".weightList[0]");
+        }
+        else
+        {
+            disconnectAttr ($selectedDriverItems[$i] + ".weight[0]") ($selectedDrivenItems[$i] + ".weight[0]");
+        }
+    }
+}
+
+arg_WeightMapUI();
