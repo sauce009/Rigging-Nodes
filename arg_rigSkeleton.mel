@@ -1,3 +1,102 @@
+global proc arg_RigSkeletonUI()
+{
+    if (`window -exists RigSkeletonUI`)
+    {
+        deleteUI RigSkeletonUI;
+    }
+    
+    string $window = `window -title "Rig Skeleton UI" RigSkeletonUI`;
+    string $form = `formLayout -numberOfDivisions 100`;
+    string $elementname = `text -label "ELEMENT NAME" -align "left"`;
+    string $element = `textField -tx "" element`;
+    string $elementBtn = `button -l "ELEMENT" -c ("arg_UpdateElementField " + $element)`;
+    string $div = `separator -width 50 -style "in"`;
+    string $rootname = `text -label "ROOT NAME"   -align "left"`;
+    string $root = `textField -tx "" root`;
+    string $rootBtn = `button -l "ROOT" -c ("arg_UpdateRootField " + $root)`;
+    string $create = `button -l "CREATE RIG SKELETON" -c ("arg_rigSkeleton")`;
+    string $tag = `checkBoxGrp -numberOfCheckBoxes 2 -label "" -labelArray2 "TAG" "GROUP"`;
+    
+    formLayout -edit
+    
+    	-attachForm     	$elementname    "top"    5 
+        -attachForm     	$elementname    "left"   5
+        -attachControl  	$elementname    "bottom" 5 $element
+        -attachPosition 	$elementname    "right"  5 75
+    
+        -attachNone     	$element     	"top"    
+        -attachForm     	$element     	"left"   5
+        -attachControl  	$element     	"bottom" 5 $div
+        -attachPosition 	$element     	"right"  5 75
+        
+        -attachNone     	$elementBtn 	"top"    
+        -attachPosition 	$elementBtn 	"left"   0 75
+        -attachControl  	$elementBtn 	"bottom" 5 $div
+        -attachForm     	$elementBtn 	"right"  5
+        
+        -attachNone     	$div 			"top"    
+        -attachForm 		$div 			"left"   5 
+        -attachControl  	$div 			"bottom" 5 $rootname
+        -attachForm     	$div 			"right"  5
+        
+        -attachNone     	$rootname 		"top"    
+        -attachForm     	$rootname 		"left"   5
+        -attachControl  	$rootname 		"bottom" 5 $root
+        -attachForm     	$rootname 		"right"  5
+        
+        -attachNone     	$root     		"top"    
+        -attachForm     	$root     		"left"   5
+        -attachControl  	$root     		"bottom" 5 $create
+        -attachPosition 	$root     		"right"  5 75
+        
+        -attachNone     	$rootBtn 		"top"    
+        -attachPosition 	$rootBtn 		"left"   0 75
+        -attachControl  	$rootBtn 		"bottom" 5 $create
+        -attachForm     	$rootBtn 		"right"  5
+        
+        -attachNone     	 $create     	"top"    
+        -attachForm     	 $create     	"left"   5
+        -attachControl  	 $create     	"bottom" 5 $tag
+        -attachForm     	 $create     	"right"  5
+        
+        -attachNone     	 $tag     	 	"top"    
+        -attachForm     	 $tag     	 	"left"   5
+        -attachForm  	 	 $tag     	 	"bottom" 5
+        -attachForm     	 $tag     	 	"right"  5
+        
+    $form;
+    
+    showWindow $window;
+}arg_RigSkeletonUI();
+
+global proc arg_UpdateElementField(string $textField)
+{
+    string $selectedObjects[] = `ls -selection`;
+    if (size($selectedObjects) > 0)
+    {
+        string $selectedObject = $selectedObjects[0];
+        textField -edit -text $selectedObject $textField;
+    }
+    else
+    {
+        textField -edit -text "Selected Object: None" $textField;
+    }
+}
+
+global proc arg_UpdateRootField(string $textField)
+{
+    string $selectedObjects[] = `ls -selection`;
+    if (size($selectedObjects) > 0)
+    {
+        string $selectedObject = $selectedObjects[0];
+        textField -edit -text $selectedObject $textField;
+    }
+    else
+    {
+        textField -edit -text "Selected Object: None" $textField;
+    }
+}
+
 global proc string arg_rigSkeleton()
 {
 	string $element = `textField -q -tx element`;
@@ -12,7 +111,7 @@ global proc string arg_rigSkeleton()
 	{
 		for ($each in $skel)
 		{
-			$grp = `group -em -n "skeleton_GRP"`;
+			$grp = `group -em -n "Skeleton_GRP"`;
 			parent $each $grp;
 			$ctrl = `curve -d 1 -p -0.378842 0 -2 -p 0.378842 0 -2 -p 0.378842 0 -0.92388 -p 0.587785 0 -0.809017 -p 0.809017 0 -0.587785 -p 0.92388 0 -0.378842 -p 2 0 -0.378842 -p 2 0 0.378842 -p 0.92388 0 0.378842 -p 0.809017 0 0.587785 -p 0.587785 0 0.809017 -p 0.378842 0 0.92388 -p 0.378842 0 2 -p -0.378842 0 2 -p -0.378842 0 0.92388 -p -0.587785 0 0.809017 -p -0.809017 0 0.587785 -p -0.92388 0 0.378842 -p -2 0 0.378842 -p -2 0 -0.378842 -p -0.92388 0 -0.378842 -p -0.809017 0 -0.587785 -p -0.587785 0 -0.809017 -p -0.378842 0 -0.92388 -p -0.378842 0 -2 -k 0 -k 1 -k 2 -k 3 -k 4 -k 5 -k 6 -k 7 -k 8 -k 9 -k 10 -k 11 -k 12 -k 13 -k 14 -k 15 -k 16 -k 17 -k 18 -k 19 -k 20 -k 21 -k 22 -k 23 -k 24 -n "global_CTRL"`;
 			parent $grp $ctrl;
